@@ -1,0 +1,112 @@
+
+import React from 'react';
+import Navbar from '@/components/layout/Navbar';
+import Sidebar from '@/components/layout/Sidebar';
+import MetricCard from '@/components/dashboard/MetricCard';
+import RecentTransactions from '@/components/dashboard/RecentTransactions';
+import FinancialOverview from '@/components/dashboard/FinancialOverview';
+import { Button } from '@/components/ui/button';
+import { ArrowUp, ArrowDown, CreditCard, FileText, BarChart4, Plus } from 'lucide-react';
+
+const Dashboard = () => {
+  // Mock financial data
+  const financialData = [
+    { month: 'Jan', income: 250000, expenses: 180000 },
+    { month: 'Feb', income: 320000, expenses: 200000 },
+    { month: 'Mar', income: 280000, expenses: 190000 },
+    { month: 'Apr', income: 350000, expenses: 210000 },
+    { month: 'May', income: 400000, expenses: 230000 },
+    { month: 'Jun', income: 450000, expenses: 250000 },
+  ];
+
+  // Mock transactions
+  const transactions = [
+    { id: '1', date: '18 Sept 2023', description: 'Office Supplies', amount: 4500, type: 'expense' as const },
+    { id: '2', date: '16 Sept 2023', description: 'Client Payment #INV-1082', amount: 45000, type: 'income' as const },
+    { id: '3', date: '14 Sept 2023', description: 'Website Hosting', amount: 2500, type: 'expense' as const },
+    { id: '4', date: '10 Sept 2023', description: 'Client Payment #INV-1081', amount: 32000, type: 'income' as const },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <Sidebar />
+      
+      <main className="ml-64 pt-16 min-h-screen">
+        <div className="p-6 max-w-6xl mx-auto animate-on-mount">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <div className="space-x-2">
+              <Button size="sm" variant="outline" className="rounded-full">
+                <Plus size={14} className="mr-1" />
+                New Invoice
+              </Button>
+              <Button size="sm" className="rounded-full">
+                <Plus size={14} className="mr-1" />
+                New Expense
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <MetricCard 
+              title="Total Revenue" 
+              value="₹5,84,000" 
+              delta={{ value: 12.5, isPositive: true }}
+              icon={<ArrowUp size={18} />}
+            />
+            <MetricCard 
+              title="Total Expenses" 
+              value="₹2,65,000" 
+              delta={{ value: 5.3, isPositive: false }}
+              icon={<ArrowDown size={18} />}
+            />
+            <MetricCard 
+              title="Outstanding Invoices" 
+              value="₹1,35,000" 
+              icon={<FileText size={18} />}
+            />
+            <MetricCard 
+              title="GST Payable" 
+              value="₹32,400" 
+              icon={<BarChart4 size={18} />}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-2">
+              <FinancialOverview data={financialData} />
+            </div>
+            <div>
+              <RecentTransactions transactions={transactions} />
+            </div>
+          </div>
+          
+          <div className="glass-card p-6 mb-6">
+            <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button variant="outline" className="h-auto py-6 flex flex-col items-center premium-transition">
+                <FileText className="h-6 w-6 mb-2 text-primary" />
+                <span>Create Invoice</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-6 flex flex-col items-center premium-transition">
+                <CreditCard className="h-6 w-6 mb-2 text-primary" />
+                <span>Record Expense</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-6 flex flex-col items-center premium-transition">
+                <BarChart4 className="h-6 w-6 mb-2 text-primary" />
+                <span>View Reports</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-6 flex flex-col items-center premium-transition">
+                <ArrowUp className="h-6 w-6 mb-2 text-primary" />
+                <span>GST Filing</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;
