@@ -14,7 +14,8 @@ import {
   FileCheck,
   FileSpreadsheet,
   ShoppingCart,
-  DollarSign
+  DollarSign,
+  QrCode
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -65,6 +66,7 @@ const Sidebar = ({ className }: SidebarProps) => {
         <SidebarItem to="/proforma-invoice" icon={<FileSpreadsheet size={18} />} label="Proforma Invoice" />
         <SidebarItem to="/purchase-order" icon={<ShoppingCart size={18} />} label="Purchase Order" />
         <SidebarItem to="/cash-receipt" icon={<DollarSign size={18} />} label="Cash Receipt" />
+        <SidebarItem to="/qr-code-generator" icon={<QrCode size={18} />} label="QR Code Generator" />
         <SidebarItem to="/estimate-quotation" icon={<FileCheck size={18} />} label="Estimate/Quotation" />
         <SidebarItem to="/restaurant-bill" icon={<Utensils size={18} />} label="Restaurant Bill" />
         <SidebarItem to="/gst" icon={<Receipt size={18} />} label="GST Compliance" />
