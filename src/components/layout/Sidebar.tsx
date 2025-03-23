@@ -12,7 +12,9 @@ import {
   Utensils,
   Calculator,
   FileCheck,
-  FileSpreadsheet
+  FileSpreadsheet,
+  ShoppingCart,
+  DollarSign
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -61,6 +63,8 @@ const Sidebar = ({ className }: SidebarProps) => {
         <SidebarItem to="/expenses" icon={<CreditCard size={18} />} label="Expenses" />
         <SidebarItem to="/invoice-generator" icon={<FileText size={18} />} label="Invoice Generator" />
         <SidebarItem to="/proforma-invoice" icon={<FileSpreadsheet size={18} />} label="Proforma Invoice" />
+        <SidebarItem to="/purchase-order" icon={<ShoppingCart size={18} />} label="Purchase Order" />
+        <SidebarItem to="/cash-receipt" icon={<DollarSign size={18} />} label="Cash Receipt" />
         <SidebarItem to="/estimate-quotation" icon={<FileCheck size={18} />} label="Estimate/Quotation" />
         <SidebarItem to="/restaurant-bill" icon={<Utensils size={18} />} label="Restaurant Bill" />
         <SidebarItem to="/gst" icon={<Receipt size={18} />} label="GST Compliance" />

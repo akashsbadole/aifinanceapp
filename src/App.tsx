@@ -15,6 +15,8 @@ import NotFound from "./pages/NotFound";
 import InvoiceGenerator from './pages/InvoiceGenerator';
 import EstimateQuotation from './pages/estimateQuotation';
 import ProformaInvoice from './pages/ProformaInvoice';
+import PurchaseOrder from './pages/PurchaseOrder';
+import CashReceipt from './pages/CashReceipt';
 
 const queryClient = new QueryClient();
 
@@ -36,6 +38,8 @@ const App = () => (
           <Route path="/invoice-generator" element={<InvoiceGenerator />} />
           <Route path="/estimate-quotation" element={<EstimateQuotation />} />
           <Route path="/proforma-invoice" element={<ProformaInvoice />} />
+          <Route path="/purchase-order" element={<PurchaseOrder />} />
+          <Route path="/cash-receipt" element={<CashReceipt />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -6,7 +5,7 @@ import MetricCard from '@/components/dashboard/MetricCard';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import FinancialOverview from '@/components/dashboard/FinancialOverview';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowDown, CreditCard, FileText, BarChart4, Plus } from 'lucide-react';
+import { ArrowUp, ArrowDown, CreditCard, FileText, BarChart4, Plus, ShoppingCart } from 'lucide-react';
 
 const Dashboard = () => {
   // Mock financial data
@@ -94,12 +93,12 @@ const Dashboard = () => {
                 <span>Record Expense</span>
               </Button>
               <Button variant="outline" className="h-auto py-6 flex flex-col items-center premium-transition">
-                <BarChart4 className="h-6 w-6 mb-2 text-primary" />
-                <span>View Reports</span>
+                <ShoppingCart className="h-6 w-6 mb-2 text-primary" />
+                <span>Create PO</span>
               </Button>
               <Button variant="outline" className="h-auto py-6 flex flex-col items-center premium-transition">
-                <ArrowUp className="h-6 w-6 mb-2 text-primary" />
-                <span>GST Filing</span>
+                <BarChart4 className="h-6 w-6 mb-2 text-primary" />
+                <span>View Reports</span>
               </Button>
             </div>
           </div>
