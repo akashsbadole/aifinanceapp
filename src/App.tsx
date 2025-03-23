@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,9 @@ import Reports from "./pages/Reports";
 import RestaurantBill from "./pages/RestaurantBill";
 import GSTCalculator from "./pages/GSTCalculator";
 import NotFound from "./pages/NotFound";
+import InvoiceGenerator from './pages/InvoiceGenerator';
+import EstimateQuotation from './pages/estimateQuotation';
+import ProformaInvoice from './pages/ProformaInvoice';
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,9 @@ const App = () => (
           <Route path="/reports" element={<Reports />} />
           <Route path="/restaurant-bill" element={<RestaurantBill />} />
           <Route path="/gst-calculator" element={<GSTCalculator />} />
+          <Route path="/invoice-generator" element={<InvoiceGenerator />} />
+          <Route path="/estimate-quotation" element={<EstimateQuotation />} />
+          <Route path="/proforma-invoice" element={<ProformaInvoice />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

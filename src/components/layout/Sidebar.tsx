@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -11,7 +10,9 @@ import {
   Users, 
   Settings,
   Utensils,
-  Calculator
+  Calculator,
+  FileCheck,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -58,6 +59,9 @@ const Sidebar = ({ className }: SidebarProps) => {
         <SidebarItem to="/dashboard" icon={<LayoutDashboard size={18} />} label="Dashboard" />
         <SidebarItem to="/invoices" icon={<FileText size={18} />} label="Invoices" />
         <SidebarItem to="/expenses" icon={<CreditCard size={18} />} label="Expenses" />
+        <SidebarItem to="/invoice-generator" icon={<FileText size={18} />} label="Invoice Generator" />
+        <SidebarItem to="/proforma-invoice" icon={<FileSpreadsheet size={18} />} label="Proforma Invoice" />
+        <SidebarItem to="/estimate-quotation" icon={<FileCheck size={18} />} label="Estimate/Quotation" />
         <SidebarItem to="/restaurant-bill" icon={<Utensils size={18} />} label="Restaurant Bill" />
         <SidebarItem to="/gst" icon={<Receipt size={18} />} label="GST Compliance" />
         <SidebarItem to="/gst-calculator" icon={<Calculator size={18} />} label="GST Calculator" />

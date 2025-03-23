@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -26,6 +25,13 @@ interface ManufacturerResult {
   sellingPrice: number;
 }
 
+interface WholesalerResult {
+  purchasePrice: number;
+  profitAmount: number;
+  totalTax: number;
+  sellingPrice: number;
+}
+
 const GSTCalculator = () => {
   const [userType, setUserType] = useState<UserType>('manufacturer');
   
@@ -43,6 +49,16 @@ const GSTCalculator = () => {
   const [profitPercentage, setProfitPercentage] = useState<string>('');
   const [manufacturerResult, setManufacturerResult] = useState<ManufacturerResult>({
     productionCost: 0,
+    profitAmount: 0,
+    totalTax: 0,
+    sellingPrice: 0
+  });
+
+  // Wholesaler state
+  const [purchasePrice, setPurchasePrice] = useState<string>('');
+  const [wholesalerProfitPercentage, setWholesalerProfitPercentage] = useState<string>('');
+  const [wholesalerResult, setWholesalerResult] = useState<WholesalerResult>({
+    purchasePrice: 0,
     profitAmount: 0,
     totalTax: 0,
     sellingPrice: 0
@@ -80,6 +96,24 @@ const GSTCalculator = () => {
 
     setManufacturerResult({
       productionCost: cost,
+      profitAmount,
+      totalTax: totalTaxAmount,
+      sellingPrice
+    });
+  };
+
+  const handleWholesalerCalculate = () => {
+    const price = parseFloat(purchasePrice) || 0;
+    const profitPercent = parseFloat(wholesalerProfitPercentage) || 0;
+    const rate = customRate ? parseFloat(customRate) : parseFloat(gstRate);
+    
+    const profitAmount = price * (profitPercent / 100);
+    const basePrice = price + profitAmount;
+    const totalTaxAmount = basePrice * (rate / 100);
+    const sellingPrice = basePrice + totalTaxAmount;
+
+    setWholesalerResult({
+      purchasePrice: price,
       profitAmount,
       totalTax: totalTaxAmount,
       sellingPrice
@@ -313,19 +347,36 @@ const GSTCalculator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="netPriceWholesaler" className="text-base">Net Price</Label>
+                      <Label htmlFor="purchasePrice" className="text-base">Purchase Price</Label>
                       <div className="flex mt-1">
                         <div className="flex items-center justify-center h-10 w-10 rounded-l-md border border-r-0 border-input bg-muted">
                           <IndianRupee size={16} />
                         </div>
                         <Input
-                          id="netPriceWholesaler"
+                          id="purchasePrice"
                           type="number"
-                          value={netPrice}
-                          onChange={(e) => setNetPrice(e.target.value)}
+                          value={purchasePrice}
+                          onChange={(e) => setPurchasePrice(e.target.value)}
                           className="rounded-l-none"
                           placeholder="0.00"
                         />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="wholesalerProfitPercentage" className="text-base">Profit Percentage</Label>
+                      <div className="flex mt-1">
+                        <Input
+                          id="wholesalerProfitPercentage"
+                          type="number"
+                          value={wholesalerProfitPercentage}
+                          onChange={(e) => setWholesalerProfitPercentage(e.target.value)}
+                          className="w-full"
+                          placeholder="0.00"
+                        />
+                        <div className="flex items-center justify-center h-10 w-10 rounded-r-md border border-l-0 border-input bg-muted">
+                          <span>%</span>
+                        </div>
                       </div>
                     </div>
 
@@ -362,37 +413,37 @@ const GSTCalculator = () => {
                           className="w-32"
                         />
                         <span className="text-lg">%</span>
-                        <Button onClick={handleBuyerCalculate} className="ml-4">Calculate</Button>
+                        <Button onClick={handleWholesalerCalculate} className="ml-4 bg-blue-600 hover:bg-blue-700">Calculate</Button>
                       </div>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="bg-blue-500 text-white p-4 rounded-lg">
-                      <p className="text-center mb-4 font-semibold">Gross Price</p>
+                      <p className="text-center mb-4 font-semibold">Purchase Price</p>
                       <div className="border-t border-blue-400 pt-4">
-                        <p className="text-center text-xl">₹ {formatCurrency(buyerResult.grossPrice)}</p>
-                      </div>
-                    </Card>
-
-                    <Card className="bg-red-500 text-white p-4 rounded-lg">
-                      <p className="text-center mb-4 font-semibold">CGST Amount</p>
-                      <div className="border-t border-red-400 pt-4">
-                        <p className="text-center text-xl">₹ {formatCurrency(buyerResult.cgstAmount)}</p>
+                        <p className="text-center text-xl">₹ {formatCurrency(wholesalerResult.purchasePrice)}</p>
                       </div>
                     </Card>
 
                     <Card className="bg-teal-500 text-white p-4 rounded-lg">
-                      <p className="text-center mb-4 font-semibold">SGST Amount</p>
+                      <p className="text-center mb-4 font-semibold">Profit Amount</p>
                       <div className="border-t border-teal-400 pt-4">
-                        <p className="text-center text-xl">₹ {formatCurrency(buyerResult.sgstAmount)}</p>
+                        <p className="text-center text-xl">₹ {formatCurrency(wholesalerResult.profitAmount)}</p>
                       </div>
                     </Card>
 
                     <Card className="bg-gray-600 text-white p-4 rounded-lg">
                       <p className="text-center mb-4 font-semibold">Total Tax</p>
                       <div className="border-t border-gray-500 pt-4">
-                        <p className="text-center text-xl">₹ {formatCurrency(buyerResult.totalTax)}</p>
+                        <p className="text-center text-xl">₹ {formatCurrency(wholesalerResult.totalTax)}</p>
+                      </div>
+                    </Card>
+
+                    <Card className="bg-red-500 text-white p-4 rounded-lg">
+                      <p className="text-center mb-4 font-semibold">Selling Price</p>
+                      <div className="border-t border-red-400 pt-4">
+                        <p className="text-center text-xl">₹ {formatCurrency(wholesalerResult.sellingPrice)}</p>
                       </div>
                     </Card>
                   </div>
