@@ -15,7 +15,9 @@ import {
   FileSpreadsheet,
   ShoppingCart,
   DollarSign,
-  QrCode
+  QrCode,
+  Barcode,
+  CreditCard as BusinessCard
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -72,6 +74,12 @@ const Sidebar = ({ className }: SidebarProps) => {
         <SidebarItem to="/gst" icon={<Receipt size={18} />} label="GST Compliance" />
         <SidebarItem to="/gst-calculator" icon={<Calculator size={18} />} label="GST Calculator" />
         <SidebarItem to="/reports" icon={<BarChart4 size={18} />} label="Reports" />
+        <SidebarItem to="/barcode-generator" icon={<Barcode size={18} />} label="Barcode Generator" />
+        <SidebarItem 
+          to="/business-card-maker" 
+          icon={<BusinessCard size={18} />} 
+          label="Business Card Maker" 
+        />
       </nav>
       
       <div className="mt-6 px-4">

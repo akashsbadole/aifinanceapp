@@ -18,6 +18,8 @@ import ProformaInvoice from './pages/ProformaInvoice';
 import PurchaseOrder from './pages/PurchaseOrder';
 import CashReceipt from './pages/CashReceipt';
 import QRCodeGenerator from './pages/QRCodeGenerator';
+import BarcodeGenerator from './pages/BarcodeGenerator';
+import BusinessCardMaker from './pages/BusinessCardMaker';
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const App = () => (
           <Route path="/purchase-order" element={<PurchaseOrder />} />
           <Route path="/cash-receipt" element={<CashReceipt />} />
           <Route path="/qr-code-generator" element={<QRCodeGenerator />} />
+          <Route path="/barcode-generator" element={<BarcodeGenerator />} />
+          <Route path="/business-card-maker" element={<BusinessCardMaker />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
