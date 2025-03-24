@@ -1,8 +1,10 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Invoices from "./pages/Invoices";
@@ -20,37 +22,40 @@ import CashReceipt from './pages/CashReceipt';
 import QRCodeGenerator from './pages/QRCodeGenerator';
 import BarcodeGenerator from './pages/BarcodeGenerator';
 import BusinessCardMaker from './pages/BusinessCardMaker';
+import ExpenseManagement from '@/components/expenses/ExpenseManagement';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/expenses" element={<Expenses />} />
-          <Route path="/gst" element={<GSTCompliance />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/restaurant-bill" element={<RestaurantBill />} />
-          <Route path="/gst-calculator" element={<GSTCalculator />} />
-          <Route path="/invoice-generator" element={<InvoiceGenerator />} />
-          <Route path="/estimate-quotation" element={<EstimateQuotation />} />
-          <Route path="/proforma-invoice" element={<ProformaInvoice />} />
-          <Route path="/purchase-order" element={<PurchaseOrder />} />
-          <Route path="/cash-receipt" element={<CashReceipt />} />
-          <Route path="/qr-code-generator" element={<QRCodeGenerator />} />
-          <Route path="/barcode-generator" element={<BarcodeGenerator />} />
-          <Route path="/business-card-maker" element={<BusinessCardMaker />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+            <Route path="/invoices" element={<DashboardLayout><Invoices /></DashboardLayout>} />
+            <Route path="/expenses" element={<DashboardLayout><ExpenseManagement /></DashboardLayout>} />
+            <Route path="/gst" element={<DashboardLayout><GSTCompliance /></DashboardLayout>} />
+            <Route path="/reports" element={<DashboardLayout><Reports /></DashboardLayout>} />
+            <Route path="/restaurant-bill" element={<DashboardLayout><RestaurantBill /></DashboardLayout>} />
+            <Route path="/gst-calculator" element={<DashboardLayout><GSTCalculator /></DashboardLayout>} />
+            <Route path="/invoice-generator" element={<DashboardLayout><InvoiceGenerator /></DashboardLayout>} />
+            <Route path="/estimate-quotation" element={<DashboardLayout><EstimateQuotation /></DashboardLayout>} />
+            <Route path="/proforma-invoice" element={<DashboardLayout><ProformaInvoice /></DashboardLayout>} />
+            <Route path="/purchase-order" element={<DashboardLayout><PurchaseOrder /></DashboardLayout>} />
+            <Route path="/cash-receipt" element={<DashboardLayout><CashReceipt /></DashboardLayout>} />
+            <Route path="/qr-code-generator" element={<DashboardLayout><QRCodeGenerator /></DashboardLayout>} />
+            <Route path="/barcode-generator" element={<DashboardLayout><BarcodeGenerator /></DashboardLayout>} />
+            <Route path="/business-card-maker" element={<DashboardLayout><BusinessCardMaker /></DashboardLayout>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
