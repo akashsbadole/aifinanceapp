@@ -1,159 +1,80 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import { expenseService } from './services/expenseService';
-import { categoryService } from './services/categoryService';
+import { PrismaClient } from '@prisma/client';
+import expenseRoutes from './routes/expenseRoutes';
+import inventoryRoutes from './routes/inventoryRoutes';
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3001;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Categories routes
-app.get('/api/categories', async (req: Request, res: Response) => {
-  try {
-    const categories = await categoryService.getAllCategories();
-    res.json(categories);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch categories' });
-  }
-});
+// Routes
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
-app.post('/api/categories', async (req: Request, res: Response) => {
-  try {
-    const category = await categoryService.createCategory(req.body);
-    res.status(201).json(category);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create category' });
-  }
-});
+// Default categories for expenses
+const defaultCategories = [
+  { name: 'Food & Dining', description: 'Groceries, restaurants, and food-related expenses' },
+  { name: 'Transportation', description: 'Fuel, public transport, and vehicle maintenance' },
+  { name: 'Housing', description: 'Rent, utilities, and home maintenance' },
+  { name: 'Healthcare', description: 'Medical expenses, prescriptions, and health insurance' },
+  { name: 'Entertainment', description: 'Movies, games, and leisure activities' },
+  { name: 'Shopping', description: 'Clothing, electronics, and other purchases' },
+  { name: 'Education', description: 'Books, courses, and educational materials' },
+  { name: 'Utilities', description: 'Electricity, water, and other utility bills' },
+  { name: 'Insurance', description: 'Life, health, and property insurance' },
+  { name: 'Other', description: 'Miscellaneous expenses' },
+];
 
-app.put('/api/categories/:id', async (req: Request, res: Response) => {
-  try {
-    const category = await categoryService.updateCategory(req.params.id, req.body);
-    res.json(category);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update category' });
-  }
-});
-
-app.delete('/api/categories/:id', async (req: Request, res: Response) => {
-  try {
-    await categoryService.deleteCategory(req.params.id);
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete category' });
-  }
-});
-
-// Expenses routes
-app.get('/api/expenses', async (req: Request, res: Response) => {
-  try {
-    const filters = {
-      startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
-      endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
-      categoryId: req.query.categoryId as string,
-      search: req.query.search as string,
-      page: req.query.page ? parseInt(req.query.page as string) : undefined,
-      limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
-    };
-    const result = await expenseService.getAllExpenses(filters);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch expenses' });
-  }
-});
-
-app.post('/api/expenses', async (req: Request, res: Response) => {
-  try {
-    const expense = await expenseService.createExpense({
-      ...req.body,
-      date: new Date(req.body.date),
-    });
-    res.status(201).json(expense);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create expense' });
-  }
-});
-
-app.put('/api/expenses/:id', async (req: Request, res: Response) => {
-  try {
-    const expense = await expenseService.updateExpense(req.params.id, {
-      ...req.body,
-      date: req.body.date ? new Date(req.body.date) : undefined,
-    });
-    res.json(expense);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update expense' });
-  }
-});
-
-app.delete('/api/expenses/:id', async (req: Request, res: Response) => {
-  try {
-    await expenseService.deleteExpense(req.params.id);
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete expense' });
-  }
-});
-
-// Reports routes
-app.get('/api/reports/summary', async (req: Request, res: Response) => {
-  try {
-    const filters = {
-      startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
-      endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
-      categoryId: req.query.categoryId as string,
-    };
-    const summary = await expenseService.getExpenseSummary(filters);
-    res.json(summary);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to generate summary' });
-  }
-});
-
-app.get('/api/reports/export', async (req: Request, res: Response) => {
-  try {
-    const filters = {
-      startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
-      endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
-      categoryId: req.query.categoryId as string,
-    };
-    const expenses = await expenseService.exportExpenses(filters);
-    res.json(expenses);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to export expenses' });
-  }
-});
-
-// Initialize database with default categories
+// Initialize default categories
 async function initializeDefaultCategories() {
-  const defaultCategories = [
-    { name: 'Office Supplies', description: 'General office supplies and materials' },
-    { name: 'Travel', description: 'Business travel expenses' },
-    { name: 'Marketing', description: 'Marketing and advertising expenses' },
-    { name: 'Utilities', description: 'Utility bills and services' },
-    { name: 'Equipment', description: 'Office equipment and hardware' },
-    { name: 'Software', description: 'Software licenses and subscriptions' },
-    { name: 'Other', description: 'Miscellaneous expenses' },
-  ];
-
-  for (const category of defaultCategories) {
-    await prisma.category.upsert({
-      where: { name: category.name },
-      update: {},
-      create: category,
-    });
+  try {
+    for (const category of defaultCategories) {
+      await prisma.category.upsert({
+        where: { name: category.name },
+        update: {},
+        create: category,
+      });
+    }
+    console.log('Default categories initialized successfully');
+  } catch (error) {
+    console.error('Error initializing default categories:', error);
   }
 }
 
 // Start server
-app.listen(port, async () => {
-  console.log(`Server running on port ${port}`);
-  await initializeDefaultCategories();
+async function startServer() {
+  try {
+    // Initialize database and default data
+    await initializeDefaultCategories();
+
+    // Start listening for requests
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.error('Error starting server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
 }); 

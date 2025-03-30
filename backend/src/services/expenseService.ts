@@ -11,6 +11,18 @@ interface ExpenseFilters {
   limit?: number;
 }
 
+interface CategoryBreakdown {
+  categoryId: string;
+  _sum: { amount: number | null };
+  _count: number;
+}
+
+interface MonthlyTrend {
+  date: Date;
+  _sum: { amount: number | null };
+  _count: number;
+}
+
 interface ExpenseSummary {
   total: number;
   byCategory: { categoryId: string; total: number }[];
@@ -18,14 +30,14 @@ interface ExpenseSummary {
 }
 
 export const expenseService = {
-  async getAllExpenses(filters: ExpenseFilters = {}) {
+  async getAllExpenses(filters: ExpenseFilters) {
     const {
       startDate,
       endDate,
       categoryId,
       search,
       page = 1,
-      limit = 10
+      limit = 10,
     } = filters;
 
     const where = {
@@ -33,34 +45,36 @@ export const expenseService = {
         startDate ? { date: { gte: startDate } } : {},
         endDate ? { date: { lte: endDate } } : {},
         categoryId ? { categoryId } : {},
-        search ? {
-          OR: [
-            { description: { contains: search, mode: 'insensitive' } },
-            { vendor: { contains: search, mode: 'insensitive' } },
-            { category: { name: { contains: search, mode: 'insensitive' } } }
-          ]
-        } : {}
-      ]
+        search
+          ? {
+              OR: [
+                { description: { contains: search, mode: 'insensitive' } },
+                { vendor: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {},
+      ],
     };
 
-    const [expenses, total] = await Promise.all([
+    const [total, expenses] = await Promise.all([
+      prisma.expense.count({ where }),
       prisma.expense.findMany({
         where,
         include: {
-          category: true
+          category: true,
         },
         orderBy: { date: 'desc' },
         skip: (page - 1) * limit,
-        take: limit
+        take: limit,
       }),
-      prisma.expense.count({ where })
     ]);
 
     return {
       expenses,
       total,
       page,
-      totalPages: Math.ceil(total / limit)
+      limit,
+      totalPages: Math.ceil(total / limit),
     };
   },
 
@@ -74,11 +88,11 @@ export const expenseService = {
     hasReceipt?: boolean;
     status?: string;
   }) {
-    return prisma.expense.create({
+    return await prisma.expense.create({
       data,
       include: {
-        category: true
-      }
+        category: true,
+      },
     });
   },
 
@@ -92,86 +106,100 @@ export const expenseService = {
     hasReceipt?: boolean;
     status?: string;
   }) {
-    return prisma.expense.update({
+    return await prisma.expense.update({
       where: { id },
       data,
       include: {
-        category: true
-      }
+        category: true,
+      },
     });
   },
 
   async deleteExpense(id: string) {
-    return prisma.expense.delete({
-      where: { id }
+    return await prisma.expense.delete({
+      where: { id },
     });
   },
 
-  async getExpenseSummary(filters: ExpenseFilters = {}): Promise<ExpenseSummary> {
+  async getExpenseSummary(filters: {
+    startDate?: Date;
+    endDate?: Date;
+    categoryId?: string;
+  }) {
     const { startDate, endDate, categoryId } = filters;
+
     const where = {
       AND: [
         startDate ? { date: { gte: startDate } } : {},
         endDate ? { date: { lte: endDate } } : {},
-        categoryId ? { categoryId } : {}
-      ]
+        categoryId ? { categoryId } : {},
+      ],
     };
 
-    const expenses = await prisma.expense.findMany({
-      where,
-      select: {
-        amount: true,
-        categoryId: true,
-        paymentMethod: true
-      }
+    const [totalAmount, categoryBreakdown, monthlyTrend] = await Promise.all([
+      // Total amount
+      prisma.expense.aggregate({
+        where,
+        _sum: { amount: true },
+      }),
+
+      // Category breakdown
+      prisma.expense.groupBy({
+        by: ['categoryId'],
+        where,
+        _sum: { amount: true },
+        _count: true,
+      }),
+
+      // Monthly trend
+      prisma.expense.groupBy({
+        by: ['date'],
+        where,
+        _sum: { amount: true },
+        _count: true,
+        orderBy: { date: 'asc' },
+      }),
+    ]);
+
+    // Get category names for the breakdown
+    const categoryIds = categoryBreakdown.map((cb: CategoryBreakdown) => cb.categoryId);
+    const categories = await prisma.category.findMany({
+      where: { id: { in: categoryIds } },
     });
 
-    const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-
-    const byCategory = expenses.reduce((acc, expense) => {
-      const existing = acc.find(item => item.categoryId === expense.categoryId);
-      if (existing) {
-        existing.total += expense.amount;
-      } else {
-        acc.push({ categoryId: expense.categoryId, total: expense.amount });
-      }
-      return acc;
-    }, [] as { categoryId: string; total: number }[]);
-
-    const byPaymentMethod = expenses.reduce((acc, expense) => {
-      if (!expense.paymentMethod) return acc;
-      const existing = acc.find(item => item.method === expense.paymentMethod);
-      if (existing) {
-        existing.total += expense.amount;
-      } else {
-        acc.push({ method: expense.paymentMethod, total: expense.amount });
-      }
-      return acc;
-    }, [] as { method: string; total: number }[]);
+    const categoryBreakdownWithNames = categoryBreakdown.map((cb: CategoryBreakdown) => ({
+      ...cb,
+      categoryName: categories.find((c: { id: string; name: string }) => c.id === cb.categoryId)?.name || 'Unknown',
+    }));
 
     return {
-      total,
-      byCategory,
-      byPaymentMethod
+      totalAmount: totalAmount._sum.amount || 0,
+      categoryBreakdown: categoryBreakdownWithNames,
+      monthlyTrend,
     };
   },
 
-  async exportExpenses(filters: ExpenseFilters = {}) {
+  async exportExpenses(filters: {
+    startDate?: Date;
+    endDate?: Date;
+    categoryId?: string;
+  }) {
     const { startDate, endDate, categoryId } = filters;
+
     const where = {
       AND: [
         startDate ? { date: { gte: startDate } } : {},
         endDate ? { date: { lte: endDate } } : {},
-        categoryId ? { categoryId } : {}
-      ]
+        categoryId ? { categoryId } : {},
+      ],
     };
 
-    return prisma.expense.findMany({
+    return await prisma.expense.findMany({
       where,
       include: {
-        category: true
+        category: true,
       },
-      orderBy: { date: 'desc' }
+      orderBy: { date: 'desc' },
     });
-  }
+  },
 }; 

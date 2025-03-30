@@ -13,6 +13,7 @@ model Category {
   description String?
   budget      Float?
   expenses    Expense[]
+  products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -30,4 +31,54 @@ model Expense {
   status      String   @default("pending")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Product {
+  id            String           @id @default(uuid())
+  name          String
+  sku           String           @unique
+  description   String?
+  categoryId    String
+  category      Category         @relation(fields: [categoryId], references: [id])
+  purchasePrice Float
+  sellingPrice  Float
+  stockQuantity Int              @default(0)
+  minimumStock  Int              @default(0)
+  location      String?
+  stockTransactions StockTransaction[]
+  saleItems     SaleItem[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model StockTransaction {
+  id              String   @id @default(uuid())
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  type            String   // 'addition' | 'removal' | 'damage'
+  quantity        Int
+  reason          String?
+  transactionDate DateTime @default(now())
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  customerName  String
+  customerPhone String?
+  totalAmount   Float
+  paymentMethod String
+  status        String     @default("completed") // 'completed' | 'pending' | 'cancelled'
+  saleDate      DateTime   @default(now())
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        String   @id @default(uuid())
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+  total     Float
 } 

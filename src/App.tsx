@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from "@/components/ui/toaster";
@@ -23,6 +23,9 @@ import QRCodeGenerator from './pages/QRCodeGenerator';
 import BarcodeGenerator from './pages/BarcodeGenerator';
 import BusinessCardMaker from './pages/BusinessCardMaker';
 import ExpenseManagement from '@/components/expenses/ExpenseManagement';
+import  ProductManagement  from '@/pages/inventory/ProductManagement';
+import StockManagement from '@/pages/inventory/StockManagement';
+import SalesTransactions from '@/pages/inventory/SalesTransactions';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +53,9 @@ const App: React.FC = () => {
             <Route path="/qr-code-generator" element={<DashboardLayout><QRCodeGenerator /></DashboardLayout>} />
             <Route path="/barcode-generator" element={<DashboardLayout><BarcodeGenerator /></DashboardLayout>} />
             <Route path="/business-card-maker" element={<DashboardLayout><BusinessCardMaker /></DashboardLayout>} />
+            <Route path="/inventory/products" element={<DashboardLayout><ProductManagement /></DashboardLayout  >} />
+            <Route path="/inventory/stock" element={<DashboardLayout><StockManagement /></DashboardLayout>} />
+            <Route path="/inventory/sales" element={<DashboardLayout><SalesTransactions /></DashboardLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

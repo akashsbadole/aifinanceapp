@@ -17,7 +17,10 @@ import {
   DollarSign,
   QrCode,
   Barcode,
-  CreditCard as BusinessCard
+  CreditCard as BusinessCard,
+  Package,
+  Boxes,
+  Store
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -62,24 +65,59 @@ const Sidebar = ({ className }: SidebarProps) => {
       
       <nav className="space-y-1 flex-1">
         <SidebarItem to="/dashboard" icon={<LayoutDashboard size={18} />} label="Dashboard" />
-        <SidebarItem to="/invoices" icon={<FileText size={18} />} label="Invoices" />
-        <SidebarItem to="/expenses" icon={<CreditCard size={18} />} label="Expenses" />
-        <SidebarItem to="/invoice-generator" icon={<FileText size={18} />} label="Invoice Generator" />
-        <SidebarItem to="/proforma-invoice" icon={<FileSpreadsheet size={18} />} label="Proforma Invoice" />
-        <SidebarItem to="/purchase-order" icon={<ShoppingCart size={18} />} label="Purchase Order" />
-        <SidebarItem to="/cash-receipt" icon={<DollarSign size={18} />} label="Cash Receipt" />
-        <SidebarItem to="/qr-code-generator" icon={<QrCode size={18} />} label="QR Code Generator" />
-        <SidebarItem to="/estimate-quotation" icon={<FileCheck size={18} />} label="Estimate/Quotation" />
-        <SidebarItem to="/restaurant-bill" icon={<Utensils size={18} />} label="Restaurant Bill" />
-        <SidebarItem to="/gst" icon={<Receipt size={18} />} label="GST Compliance" />
-        <SidebarItem to="/gst-calculator" icon={<Calculator size={18} />} label="GST Calculator" />
-        <SidebarItem to="/reports" icon={<BarChart4 size={18} />} label="Reports" />
-        <SidebarItem to="/barcode-generator" icon={<Barcode size={18} />} label="Barcode Generator" />
-        <SidebarItem 
-          to="/business-card-maker" 
-          icon={<BusinessCard size={18} />} 
-          label="Business Card Maker" 
-        />
+        
+        {/* Inventory Section */}
+        <div className="px-4 py-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Inventory
+          </h3>
+          <div className="space-y-1">
+            <SidebarItem to="/inventory/products" icon={<Boxes size={18} />} label="Product Management" />
+            <SidebarItem to="/inventory/stock" icon={<Store size={18} />} label="Stock Management" />
+            <SidebarItem to="/inventory/sales" icon={<ShoppingCart size={18} />} label="Sales Transactions" />
+          </div>
+        </div>
+
+        {/* Invoice Section */}
+        <div className="px-4 py-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Invoices
+          </h3>
+          <div className="space-y-1">
+            <SidebarItem to="/invoices" icon={<FileText size={18} />} label="Invoices" />
+            <SidebarItem to="/invoice-generator" icon={<FileText size={18} />} label="Invoice Generator" />
+            <SidebarItem to="/proforma-invoice" icon={<FileSpreadsheet size={18} />} label="Proforma Invoice" />
+            <SidebarItem to="/purchase-order" icon={<ShoppingCart size={18} />} label="Purchase Order" />
+            <SidebarItem to="/cash-receipt" icon={<DollarSign size={18} />} label="Cash Receipt" />
+          </div>
+        </div>
+
+        {/* Tools Section */}
+        <div className="px-4 py-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Tools
+          </h3>
+          <div className="space-y-1">
+            <SidebarItem to="/qr-code-generator" icon={<QrCode size={18} />} label="QR Code Generator" />
+            <SidebarItem to="/estimate-quotation" icon={<FileCheck size={18} />} label="Estimate/Quotation" />
+            <SidebarItem to="/restaurant-bill" icon={<Utensils size={18} />} label="Restaurant Bill" />
+            <SidebarItem to="/barcode-generator" icon={<Barcode size={18} />} label="Barcode Generator" />
+            <SidebarItem to="/business-card-maker" icon={<BusinessCard size={18} />} label="Business Card Maker" />
+          </div>
+        </div>
+
+        {/* Finance Section */}
+        <div className="px-4 py-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Finance
+          </h3>
+          <div className="space-y-1">
+            <SidebarItem to="/expenses" icon={<CreditCard size={18} />} label="Expenses" />
+            <SidebarItem to="/gst" icon={<Receipt size={18} />} label="GST Compliance" />
+            <SidebarItem to="/gst-calculator" icon={<Calculator size={18} />} label="GST Calculator" />
+            <SidebarItem to="/reports" icon={<BarChart4 size={18} />} label="Reports" />
+          </div>
+        </div>
       </nav>
       
       <div className="mt-6 px-4">
