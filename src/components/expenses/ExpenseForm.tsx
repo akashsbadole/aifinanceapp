@@ -94,6 +94,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ expense, onSuccess }) => {
         hasReceipt: expense.hasReceipt,
         status: expense.status,
       });
+      setOpen(true);
     }
   }, [expense, form]);
 

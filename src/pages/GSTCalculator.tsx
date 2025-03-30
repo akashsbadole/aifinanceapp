@@ -134,7 +134,7 @@ const GSTCalculator = () => {
       <Navbar />
       <Sidebar />
       
-      <main className="ml-64 pt-16 min-h-screen">
+      <main className="ml-2 pt-2 min-h-screen">
         <div className="p-6 max-w-6xl mx-auto animate-on-mount">
           <h1 className="text-3xl font-bold mb-6 text-center text-red-500">GST Calculator India</h1>
 

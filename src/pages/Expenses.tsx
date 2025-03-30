@@ -86,7 +86,7 @@ const Expenses = () => {
       <Navbar />
       <Sidebar />
       
-      <main className="ml-64 pt-16 min-h-screen">
+      <main className="ml-2 pt-2 min-h-screen">
         <div className="p-6 max-w-6xl mx-auto animate-on-mount">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <h1 className="text-2xl font-bold">Expenses</h1>
