@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -7,14 +7,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -22,26 +22,30 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from 'sonner';
-import { Plus, ShoppingCart, CreditCard, Receipt } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { Plus, ShoppingCart, CreditCard, Receipt } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 const saleSchema = z.object({
-  customerName: z.string().min(1, 'Customer name is required'),
+  customerName: z.string().min(1, "Customer name is required"),
   customerPhone: z.string().optional(),
-  paymentMethod: z.string().min(1, 'Payment method is required'),
-  items: z.array(z.object({
-    productId: z.string().min(1, 'Product is required'),
-    quantity: z.number().min(1, 'Quantity must be positive'),
-    price: z.number().min(0, 'Price must be positive'),
-    total: z.number().min(0, 'Total must be positive'),
-  })).min(1, 'At least one item is required'),
+  paymentMethod: z.string().min(1, "Payment method is required"),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1, "Product is required"),
+        quantity: z.number().min(1, "Quantity must be positive"),
+        price: z.number().min(0, "Price must be positive"),
+        total: z.number().min(0, "Total must be positive"),
+      })
+    )
+    .min(1, "At least one item is required"),
 });
 
 interface Sale {
@@ -76,19 +80,21 @@ const SalesTransactions: React.FC = () => {
   const [sales, setSales] = useState<Sale[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<{
-    productId: string;
-    quantity: number;
-    price: number;
-    total: number;
-  }[]>([]);
+  const [selectedItems, setSelectedItems] = useState<
+    {
+      productId: string;
+      quantity: number;
+      price: number;
+      total: number;
+    }[]
+  >([]);
 
   const form = useForm<z.infer<typeof saleSchema>>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
-      customerName: '',
-      customerPhone: '',
-      paymentMethod: '',
+      customerName: "",
+      customerPhone: "",
+      paymentMethod: "",
       items: [],
     },
   });
@@ -100,31 +106,37 @@ const SalesTransactions: React.FC = () => {
 
   const fetchSales = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory/sales');
+      const response = await fetch("http://localhost:3001/api/inventory/sales");
       const data = await response.json();
       setSales(data);
+      console.log("data ", data);
     } catch (error) {
-      toast.error('Failed to fetch sales');
+      toast.error("Failed to fetch sales");
     }
   };
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory/products');
+      const response = await fetch(
+        "http://localhost:3001/api/inventory/products"
+      );
       const data = await response.json();
       setProducts(data);
     } catch (error) {
-      toast.error('Failed to fetch products');
+      toast.error("Failed to fetch products");
     }
   };
 
   const addItem = () => {
-    setSelectedItems([...selectedItems, {
-      productId: '',
-      quantity: 1,
-      price: 0,
-      total: 0,
-    }]);
+    setSelectedItems([
+      ...selectedItems,
+      {
+        productId: "",
+        quantity: 1,
+        price: 0,
+        total: 0,
+      },
+    ]);
   };
 
   const updateItem = (index: number, field: string, value: any) => {
@@ -134,14 +146,14 @@ const SalesTransactions: React.FC = () => {
       [field]: value,
     };
 
-    if (field === 'productId') {
-      const product = products.find(p => p.id === value);
+    if (field === "productId") {
+      const product = products.find((p) => p.id === value);
       if (product) {
         newItems[index].price = product.sellingPrice;
         newItems[index].total = product.sellingPrice * newItems[index].quantity;
       }
-    } else if (field === 'quantity') {
-      const product = products.find(p => p.id === newItems[index].productId);
+    } else if (field === "quantity") {
+      const product = products.find((p) => p.id === newItems[index].productId);
       if (product) {
         newItems[index].total = product.sellingPrice * value;
       }
@@ -160,45 +172,64 @@ const SalesTransactions: React.FC = () => {
 
   const onSubmit = async (values: z.infer<typeof saleSchema>) => {
     try {
+      if (selectedItems.length === 0) {
+        toast.error("Please add at least one item to complete the sale.");
+        return;
+      }
+
       const saleData = {
         ...values,
         totalAmount: calculateTotal(),
-        items: selectedItems,
+        items: selectedItems.map((item) => ({
+          ...item,
+          total: item.price * item.quantity,
+        })),
       };
 
-      await fetch('http://localhost:3001/api/inventory/sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(saleData),
-      });
+      console.log("Payload being sent:", saleData); // Log the payload for debugging
 
-      toast.success('Sale completed successfully');
+      const response = await fetch(
+        "http://localhost:3001/api/inventory/sales",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(saleData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Server error:", errorData); // Log server error for debugging
+        throw new Error(errorData.error || "Failed to complete sale");
+      }
+
+      toast.success("Sale completed successfully");
       setIsDialogOpen(false);
       form.reset();
       setSelectedItems([]);
       fetchSales();
-    } catch (error) {
-      toast.error('Failed to complete sale');
+    } catch (error: any) {
+      toast.error(error.message || "Failed to complete sale");
     }
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(value);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-500';
-      case 'pending':
-        return 'bg-yellow-500';
-      case 'cancelled':
-        return 'bg-red-500';
+      case "completed":
+        return "bg-green-500";
+      case "pending":
+        return "bg-yellow-500";
+      case "cancelled":
+        return "bg-red-500";
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
 
@@ -218,7 +249,13 @@ const SalesTransactions: React.FC = () => {
               <DialogTitle>New Sale</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  form.handleSubmit(onSubmit)();
+                }}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -280,19 +317,25 @@ const SalesTransactions: React.FC = () => {
                   </div>
 
                   {selectedItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-5 gap-4 items-end">
+                    <div
+                      key={index}
+                      className="grid grid-cols-5 gap-4 items-end"
+                    >
                       <FormItem>
                         <FormLabel>Product</FormLabel>
                         <FormControl>
                           <select
                             value={item.productId}
-                            onChange={(e) => updateItem(index, 'productId', e.target.value)}
+                            onChange={(e) =>
+                              updateItem(index, "productId", e.target.value)
+                            }
                             className="w-full p-2 border rounded-md"
                           >
                             <option value="">Select product</option>
                             {products.map((product) => (
                               <option key={product.id} value={product.id}>
-                                {product.name} (SKU: {product.sku}) - Stock: {product.stockQuantity}
+                                {product.name} (SKU: {product.sku}) - Stock:{" "}
+                                {product.stockQuantity}
                               </option>
                             ))}
                           </select>
@@ -305,7 +348,13 @@ const SalesTransactions: React.FC = () => {
                           <Input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
+                            onChange={(e) =>
+                              updateItem(
+                                index,
+                                "quantity",
+                                parseInt(e.target.value)
+                              )
+                            }
                           />
                         </FormControl>
                       </FormItem>
@@ -316,7 +365,13 @@ const SalesTransactions: React.FC = () => {
                           <Input
                             type="number"
                             value={item.price}
-                            onChange={(e) => updateItem(index, 'price', parseFloat(e.target.value))}
+                            onChange={(e) =>
+                              updateItem(
+                                index,
+                                "price",
+                                parseFloat(e.target.value)
+                              )
+                            }
                           />
                         </FormControl>
                       </FormItem>
@@ -324,11 +379,7 @@ const SalesTransactions: React.FC = () => {
                       <FormItem>
                         <FormLabel>Total</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            value={item.total}
-                            readOnly
-                          />
+                          <Input type="number" value={item.total} readOnly />
                         </FormControl>
                       </FormItem>
 
@@ -372,9 +423,7 @@ const SalesTransactions: React.FC = () => {
         <TableBody>
           {sales.map((sale) => (
             <TableRow key={sale.id}>
-              <TableCell>
-                {new Date(sale.saleDate).toLocaleString()}
-              </TableCell>
+              <TableCell>{new Date(sale.saleDate).toLocaleString()}</TableCell>
               <TableCell>
                 {sale.customerName}
                 {sale.customerPhone && (
@@ -385,7 +434,8 @@ const SalesTransactions: React.FC = () => {
                 <ul className="list-disc list-inside">
                   {sale.items.map((item) => (
                     <li key={item.id}>
-                      {item.product.name} x {item.quantity} - ₹{item.total.toFixed(2)}
+                      {item.product.name} x {item.quantity} - ₹
+                      {item.total.toFixed(2)}
                     </li>
                   ))}
                 </ul>
@@ -393,13 +443,15 @@ const SalesTransactions: React.FC = () => {
               <TableCell>₹{sale.totalAmount.toFixed(2)}</TableCell>
               <TableCell>{sale.paymentMethod}</TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  sale.status === 'completed'
-                    ? 'bg-green-100 text-green-800'
-                    : sale.status === 'pending'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    sale.status === "completed"
+                      ? "bg-green-100 text-green-800"
+                      : sale.status === "pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
                   {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
                 </span>
               </TableCell>
@@ -411,4 +463,4 @@ const SalesTransactions: React.FC = () => {
   );
 };
 
-export default SalesTransactions; 
+export default SalesTransactions;

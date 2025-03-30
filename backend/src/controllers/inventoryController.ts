@@ -109,7 +109,9 @@ export const inventoryController = {
       const sale = await inventoryService.createSale(req.body);
       res.status(201).json(sale);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to create sale' });
+      const err = error as Error;
+      console.error("Error in createSale:", err.message, err.stack); // Log error details
+      res.status(500).json({ error: 'Failed to create sale', details: err.message }); // Include error details in response
     }
   },
 
@@ -152,4 +154,4 @@ export const inventoryController = {
       res.status(500).json({ error: 'Failed to delete category' });
     }
   },
-}; 
+};

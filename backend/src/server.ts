@@ -50,6 +50,28 @@ async function initializeDefaultCategories() {
   }
 }
 
+// API Endpoints
+
+// Create a category
+app.post('/api/categories', async (req, res) => {
+  const { name, description, budget } = req.body;
+  try {
+    const category = await prisma.category.create({
+      data: { name, description, budget },
+    });
+    res.status(201).json(category);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    res.status(400).json({ error: errorMessage });
+  }
+});
+
+// Get all categories
+app.get('/api/categories', async (req, res) => {
+  const categories = await prisma.category.findMany();
+  res.json(categories);
+});
+
 // Start server
 async function startServer() {
   try {
@@ -77,4 +99,4 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
-}); 
+});

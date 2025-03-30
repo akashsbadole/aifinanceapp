@@ -1,4 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import { log } from 'console';
+// Ensure the logger module exists or update the path if necessary
+// Remove logger import as it is not being used
 
 const prisma = new PrismaClient();
 
@@ -96,7 +99,7 @@ export const inventoryService = {
   }) {
     const { productId, type, quantity, reason } = data;
     // Start a transaction
-    return await prisma.$transaction(async (tx: PrismaClient) => {
+    return await prisma.$transaction(async (tx) => {
       // Create stock transaction
       const transaction = await tx.stockTransaction.create({
         data: {
@@ -170,46 +173,68 @@ export const inventoryService = {
       total: number;
     }[];
   }) {
-    return await prisma.$transaction(async (tx: PrismaClient) => {
-      // Create sale
-      const sale = await tx.sale.create({
-        data: {
-          customerName: data.customerName,
-          customerPhone: data.customerPhone,
-          totalAmount: data.totalAmount,
-          paymentMethod: data.paymentMethod,
-          status: data.status || 'completed',
-          items: {
-            create: data.items,
-          },
-        },
-        include: {
-          items: {
-            include: {
-              product: true,
-            },
-          },
-        },
-      });
-
-      // Update product stock quantities
-      for (const item of data.items) {
-        const product = await tx.product.findUnique({
-          where: { id: item.productId },
+    try {
+      console.log('Creating sale with data:', data); // Log incoming data
+      return await prisma.$transaction(async (tx) => {
+        // Validate product IDs
+        const productIds = data.items.map((item) => item.productId);
+        const existingProducts = await tx.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true },
         });
 
-        if (product) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
-              stockQuantity: product.stockQuantity - item.quantity,
-            },
-          });
-        }
-      }
+        const existingProductIds = new Set(existingProducts.map((p) => p.id));
+        const invalidProductIds = productIds.filter((id) => !existingProductIds.has(id));
 
-      return sale;
-    });
+        if (invalidProductIds.length > 0) {
+          throw new Error(
+            `The following product IDs are invalid or do not exist in the inventory: ${invalidProductIds.join(', ')}. Please verify the product IDs and try again.`
+          );
+        }
+
+        // Create sale
+        const sale = await tx.sale.create({
+          data: {
+            customerName: data.customerName,
+            customerPhone: data.customerPhone,
+            totalAmount: data.totalAmount,
+            paymentMethod: data.paymentMethod,
+            status: data.status || 'completed',
+            items: {
+              create: data.items,
+            },
+          },
+          include: {
+            items: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        });
+
+        // Update product stock quantities
+        for (const item of data.items) {
+          const product = await tx.product.findUnique({
+            where: { id: item.productId },
+          });
+
+          if (product) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: {
+                stockQuantity: product.stockQuantity - item.quantity,
+              },
+            });
+          }
+        }
+
+        return sale;
+      });
+    } catch (error) {
+      console.log('Error creating sale:', error); // Log errors
+      throw error;
+    }
   },
 
   // Category operations
@@ -243,4 +268,4 @@ export const inventoryService = {
       where: { id },
     });
   },
-}; 
+};
