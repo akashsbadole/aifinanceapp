@@ -36,16 +36,14 @@ const saleSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
   customerPhone: z.string().optional(),
   paymentMethod: z.string().min(1, "Payment method is required"),
-  items: z
-    .array(
-      z.object({
-        productId: z.string().min(1, "Product is required"),
-        quantity: z.number().min(1, "Quantity must be positive"),
-        price: z.number().min(0, "Price must be positive"),
-        total: z.number().min(0, "Total must be positive"),
-      })
-    )
-    .min(1, "At least one item is required"),
+  items: z.array(
+    z.object({
+      productId: z.string().min(1, "Product is required"),
+      quantity: z.number().min(1, "Quantity must be positive"),
+      price: z.number().min(0, "Price must be positive"),
+      total: z.number().min(0, "Total must be positive"),
+    })
+  ),
 });
 
 interface Sale {
@@ -178,15 +176,12 @@ const SalesTransactions: React.FC = () => {
       }
 
       const saleData = {
-        ...values,
+        customerName: values.customerName,
+        customerPhone: values.customerPhone,
+        paymentMethod: values.paymentMethod,
         totalAmount: calculateTotal(),
-        items: selectedItems.map((item) => ({
-          ...item,
-          total: item.price * item.quantity,
-        })),
+        items: selectedItems,
       };
-
-      console.log("Payload being sent:", saleData); // Log the payload for debugging
 
       const response = await fetch(
         "http://localhost:3001/api/inventory/sales",
@@ -199,16 +194,17 @@ const SalesTransactions: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Server error:", errorData); // Log server error for debugging
-        throw new Error(errorData.error || "Failed to complete sale");
+        throw new Error(errorData.message || "Failed to complete sale");
       }
 
+      const result = await response.json();
       toast.success("Sale completed successfully");
       setIsDialogOpen(false);
       form.reset();
       setSelectedItems([]);
       fetchSales();
     } catch (error: any) {
+      console.error("Sale creation error:", error);
       toast.error(error.message || "Failed to complete sale");
     }
   };
@@ -250,10 +246,7 @@ const SalesTransactions: React.FC = () => {
             </DialogHeader>
             <Form {...form}>
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  form.handleSubmit(onSubmit)();
-                }}
+                onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
                 <div className="grid grid-cols-2 gap-4">

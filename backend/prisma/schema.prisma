@@ -81,4 +81,14 @@ model SaleItem {
   quantity  Int
   price     Float
   total     Float
-} 
+}
+
+model POSPayment {
+  id       String   @id @default(uuid())
+  saleId   String
+  sale     Sale     @relation(fields: [saleId], references: [id])
+  amount   Float
+  method   String
+  status   String   @default("completed") // 'completed' | 'pending' | 'failed'
+  paidAt   DateTime @default(now())
+}
