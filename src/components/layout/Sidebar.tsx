@@ -168,6 +168,11 @@ const Sidebar = ({ className }: SidebarProps) => {
               icon={<BusinessCard size={18} />}
               label="Business Card Maker"
             />
+            <SidebarItem
+              to="/calculators"
+              icon={<Calculator size={18} />}
+              label="Calculators"
+            />
           </div>
         </div>
 

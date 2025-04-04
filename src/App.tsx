@@ -37,6 +37,7 @@ import SSYCalculator from "@/components/calculators/SSYCalculator";
 import SWPCalculator from "@/components/calculators/SWPCalculator";
 import MutualFundCalculator from "@/components/calculators/MutualFundCalculator";
 import BrokerageCalculator from "@/components/calculators/BrokerageCalculator";
+import CalculatorLanding from "./pages/CalculatorLanding";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App: React.FC = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/calculators" element={<CalculatorLanding />} />
 
             {/* Calculator Routes */}
             <Route path="/calculators/emi" element={<EMICalculator />} />
