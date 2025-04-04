@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import Navbar from '@/components/layout/Navbar';
+// import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -233,7 +233,7 @@ const InvoiceGenerator = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      {/* <Navbar /> */}
       <Sidebar />
       
       <main className="ml-2 pt-2 min-h-screen">

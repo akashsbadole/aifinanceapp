@@ -1,10 +1,16 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, Settings, User } from 'lucide-react';
+import { Calendar, Settings, User, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +24,22 @@ interface NavbarProps {
   className?: string;
 }
 
+const calculators = [
+  { name: "Personal Loan EMI Calculator", path: "/calculators/emi" },
+  { name: "Brokerage Calculator", path: "/calculators/brokerage" },
+  { name: "Margin Calculator", path: "/calculators/margin" },
+  { name: "SIP Calculator", path: "/calculators/sip" },
+  { name: "SWP Calculator", path: "/calculators/swp" },
+  { name: "Sukanya Samriddhi Yojana Calculator", path: "/calculators/ssy" },
+  { name: "Mutual Fund Returns Calculator", path: "/calculators/mutual-fund" },
+  { name: "FD Calculator", path: "/calculators/fd" },
+  { name: "RD Calculator", path: "/calculators/rd" },
+  { name: "PPF Calculator", path: "/calculators/ppf" },
+  { name: "EPF Calculator", path: "/calculators/epf" },
+  { name: "NPS Calculator", path: "/calculators/nps" },
+  { name: "Gratuity Calculator", path: "/calculators/gratuity" },
+];
+
 const Navbar = ({ className }: NavbarProps) => {
   return (
     <header className={cn(
@@ -28,7 +50,32 @@ const Navbar = ({ className }: NavbarProps) => {
         <Link to="/" className="flex items-center mr-6">
           <span className="text-xl font-semibold text-primary">BizNest</span>
         </Link>
-        <span className="text-sm text-muted-foreground">
+
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent">
+                <Calculator className="w-4 h-4 mr-2" />
+                Calculators
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="grid w-[400px] gap-3 p-4">
+                  {calculators.map((calc) => (
+                    <Link
+                      key={calc.path}
+                      to={calc.path}
+                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                    >
+                      <div className="text-sm font-medium leading-none">{calc.name}</div>
+                    </Link>
+                  ))}
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+
+        <span className="text-sm text-muted-foreground ml-4">
           <Calendar className="w-4 h-4 inline mr-1" /> 
           {new Date().toLocaleDateString('en-IN', { 
             day: 'numeric', 

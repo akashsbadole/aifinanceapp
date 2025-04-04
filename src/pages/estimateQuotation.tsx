@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import Navbar from '@/components/layout/Navbar';
+// import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 
 interface Item {
@@ -161,7 +161,7 @@ const EstimateQuotation: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      {/* <Navbar /> */}
       <Sidebar />
       
       <main className=" pt-16 min-h-screen">

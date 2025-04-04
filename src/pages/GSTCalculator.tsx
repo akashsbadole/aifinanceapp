@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from '@/components/layout/Navbar';
+// import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -131,7 +131,7 @@ const GSTCalculator = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      {/* <Navbar /> */}
       <Sidebar />
       
       <main className="ml-2 pt-2 min-h-screen">

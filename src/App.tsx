@@ -27,6 +27,9 @@ import ProductManagement from "@/pages/inventory/ProductManagement";
 import StockManagement from "@/pages/inventory/StockManagement";
 import SalesTransactions from "@/pages/inventory/SalesTransactions";
 import POS from "./pages/POS";
+import EMICalculator from "./pages/calculators/EMICalculator";
+import SIPCalculator from "./pages/calculators/SIPCalculator";
+import FDCalculator from "./pages/calculators/FDCalculator";
 
 const queryClient = new QueryClient();
 
@@ -188,6 +191,31 @@ const App: React.FC = () => {
               element={
                 <DashboardLayout>
                   <POS />
+                </DashboardLayout>
+              }
+            />
+            {/* Calculator Routes */}
+            <Route
+              path="/calculators/emi"
+              element={
+                <DashboardLayout>
+                  <EMICalculator />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/calculators/sip"
+              element={
+                <DashboardLayout>
+                  <SIPCalculator />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/calculators/fd"
+              element={
+                <DashboardLayout>
+                  <FDCalculator />
                 </DashboardLayout>
               }
             />
