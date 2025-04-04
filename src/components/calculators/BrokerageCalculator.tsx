@@ -11,168 +11,277 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import BaseCalculator from "./BaseCalculator";
+import BrokerageInformation from "./information/BrokerageInformation";
 
 const BrokerageCalculator = () => {
-  const [tradeValue, setTradeValue] = useState<string>("");
-  const [tradeType, setTradeType] = useState<"delivery" | "intraday">(
-    "delivery"
-  );
+  const [orderValue, setOrderValue] = useState<string>("");
+  const [quantity, setQuantity] = useState<string>("");
+  const [buyPrice, setBuyPrice] = useState<string>("");
+  const [sellPrice, setSellPrice] = useState<string>("");
+  const [tradeType, setTradeType] = useState<string>("equity-delivery");
+  const [brokerageType, setBrokerageType] = useState<string>("flat");
+  const [customBrokerage, setCustomBrokerage] = useState<string>("");
   const [result, setResult] = useState<{
-    brokerage: number;
+    totalBrokerage: number;
     stt: number;
     exchangeCharges: number;
     gst: number;
     sebiCharges: number;
     stampDuty: number;
     totalCharges: number;
-    netAmount: number;
+    netProfitLoss: number;
+    breakEvenPrice: number;
   } | null>(null);
 
   const calculateBrokerage = () => {
-    const value = parseFloat(tradeValue);
+    const qty = parseFloat(quantity);
+    const buy = parseFloat(buyPrice);
+    const sell = parseFloat(sellPrice);
+    const buyValue = qty * buy;
+    const sellValue = qty * sell;
+    const totalValue = buyValue + sellValue;
 
-    // Standard rates for Indian markets
-    const brokerageRate = tradeType === "delivery" ? 0.0003 : 0.0002; // 0.03% for delivery, 0.02% for intraday
-    const sttRate = tradeType === "delivery" ? 0.001 : 0.00025; // 0.1% for delivery, 0.025% for intraday
-    const exchangeRate = 0.0000325; // 0.00325%
-    const gstRate = 0.18; // 18%
-    const sebiRate = 0.000001; // 0.0001%
-    const stampDutyRate = tradeType === "delivery" ? 0.00015 : 0.00003; // 0.015% for delivery, 0.003% for intraday
+    let brokerage = 0;
+    if (brokerageType === "flat") {
+      brokerage = 40; // ₹20 per side for flat fee brokers
+    } else if (brokerageType === "percentage") {
+      const brokerageRate = parseFloat(customBrokerage) / 100;
+      brokerage = (buyValue + sellValue) * brokerageRate;
+    }
 
-    const brokerage = value * brokerageRate;
-    const stt = value * sttRate;
-    const exchangeCharges = value * exchangeRate;
-    const sebiCharges = value * sebiRate;
-    const stampDuty = value * stampDutyRate;
+    let stt = 0;
+    let exchangeCharges = 0;
+    let sebiCharges = 0;
+    let stampDuty = 0;
 
-    // GST is applied on brokerage and exchange charges
-    const gst = (brokerage + exchangeCharges) * gstRate;
+    // Calculate STT based on trade type
+    switch (tradeType) {
+      case "equity-delivery":
+        stt = (buyValue + sellValue) * 0.001; // 0.1% on both sides
+        exchangeCharges = totalValue * 0.0000345; // 0.00345% typical
+        stampDuty = buyValue * 0.00015; // 0.015% on buy side
+        break;
+      case "equity-intraday":
+        stt = sellValue * 0.00025; // 0.025% on sell side
+        exchangeCharges = totalValue * 0.0000345;
+        stampDuty = buyValue * 0.00003; // 0.003% for intraday
+        break;
+      case "futures":
+        stt = sellValue * 0.000125; // 0.0125% on sell side
+        exchangeCharges = totalValue * 0.0000345;
+        stampDuty = buyValue * 0.00002; // 0.002% for F&O
+        break;
+      case "options":
+        stt = sellValue * 0.000625; // 0.0625% on premium
+        exchangeCharges = totalValue * 0.0000345;
+        stampDuty = buyValue * 0.00002;
+        break;
+    }
 
+    // SEBI charges
+    sebiCharges = totalValue * 0.0000001; // ₹10 per crore = 0.00001%
+
+    // GST on brokerage and exchange charges
+    const gst = (brokerage + exchangeCharges) * 0.18;
+
+    // Total charges
     const totalCharges =
       brokerage + stt + exchangeCharges + gst + sebiCharges + stampDuty;
-    const netAmount =
-      tradeType === "delivery" ? value + totalCharges : totalCharges;
+
+    // Net P&L
+    const grossPL = sellValue - buyValue;
+    const netPL = grossPL - totalCharges;
+
+    // Break-even price calculation
+    const breakEvenPercent = (totalCharges / buyValue) * 100;
+    const breakEvenPrice = buy * (1 + breakEvenPercent / 100);
 
     setResult({
-      brokerage,
+      totalBrokerage: brokerage,
       stt,
       exchangeCharges,
       gst,
       sebiCharges,
       stampDuty,
       totalCharges,
-      netAmount,
+      netProfitLoss: netPL,
+      breakEvenPrice,
     });
   };
 
   return (
     <BaseCalculator title="Brokerage Calculator">
-      <div className="grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="tradeValue">Trade Value (₹)</Label>
-          <Input
-            id="tradeValue"
-            type="number"
-            value={tradeValue}
-            onChange={(e) => setTradeValue(e.target.value)}
-            placeholder="Enter trade value"
-          />
-        </div>
+      <div className="space-y-6">
+        <div className="grid gap-6">
+          <div className="grid gap-2">
+            <Label htmlFor="tradeType">Trade Type</Label>
+            <Select
+              onValueChange={(value) => setTradeType(value)}
+              defaultValue={tradeType}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select trade type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="equity-delivery">Equity Delivery</SelectItem>
+                <SelectItem value="equity-intraday">Equity Intraday</SelectItem>
+                <SelectItem value="futures">Futures</SelectItem>
+                <SelectItem value="options">Options</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="tradeType">Trade Type</Label>
-          <Select
-            value={tradeType}
-            onValueChange={(value: "delivery" | "intraday") =>
-              setTradeType(value)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select trade type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="delivery">Delivery</SelectItem>
-              <SelectItem value="intraday">Intraday</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <div className="grid gap-2">
+            <Label htmlFor="brokerageType">Brokerage Structure</Label>
+            <Select
+              onValueChange={(value) => setBrokerageType(value)}
+              defaultValue={brokerageType}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select brokerage type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="flat">Flat Fee (₹20 per order)</SelectItem>
+                <SelectItem value="percentage">Percentage Based</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Button onClick={calculateBrokerage}>Calculate Charges</Button>
+          {brokerageType === "percentage" && (
+            <div className="grid gap-2">
+              <Label htmlFor="customBrokerage">Brokerage Percentage (%)</Label>
+              <Input
+                id="customBrokerage"
+                type="number"
+                value={customBrokerage}
+                onChange={(e) => setCustomBrokerage(e.target.value)}
+                placeholder="Enter brokerage percentage"
+                step="0.01"
+              />
+            </div>
+          )}
+
+          <div className="grid gap-2">
+            <Label htmlFor="quantity">Quantity</Label>
+            <Input
+              id="quantity"
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Enter quantity"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="buyPrice">Buy Price (₹)</Label>
+            <Input
+              id="buyPrice"
+              type="number"
+              value={buyPrice}
+              onChange={(e) => setBuyPrice(e.target.value)}
+              placeholder="Enter buy price"
+              step="0.05"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="sellPrice">Sell Price (₹)</Label>
+            <Input
+              id="sellPrice"
+              type="number"
+              value={sellPrice}
+              onChange={(e) => setSellPrice(e.target.value)}
+              placeholder="Enter sell price"
+              step="0.05"
+            />
+          </div>
+
+          <Button onClick={calculateBrokerage}>Calculate Charges</Button>
+        </div>
 
         {result && (
-          <div className="mt-6">
+          <div className="mt-6 space-y-4">
             <Card>
-              <div className="p-6 grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">
-                      Brokerage
-                    </h3>
-                    <p className="text-lg font-semibold">
-                      ₹{result.brokerage.toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">
-                      STT
-                    </h3>
-                    <p className="text-lg font-semibold">
-                      ₹{result.stt.toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">
-                      Exchange Charges
-                    </h3>
-                    <p className="text-lg font-semibold">
-                      ₹{result.exchangeCharges.toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">
-                      GST
-                    </h3>
-                    <p className="text-lg font-semibold">
-                      ₹{result.gst.toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">
-                      SEBI Charges
-                    </h3>
-                    <p className="text-lg font-semibold">
-                      ₹{result.sebiCharges.toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">
-                      Stamp Duty
-                    </h3>
-                    <p className="text-lg font-semibold">
-                      ₹{result.stampDuty.toFixed(2)}
-                    </p>
-                  </div>
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <h3 className="font-semibold text-lg">Brokerage</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{result.totalBrokerage.toFixed(2)}
+                  </p>
                 </div>
-                <div className="border-t pt-4 mt-2">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-semibold text-base">Total Charges</h3>
-                      <p className="text-xl font-bold text-primary">
-                        ₹{result.totalCharges.toFixed(2)}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-base">Net Amount</h3>
-                      <p className="text-xl font-bold text-primary">
-                        ₹{result.netAmount.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
+                <div>
+                  <h3 className="font-semibold text-lg">STT</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{result.stt.toFixed(2)}
+                  </p>
                 </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Exchange Charges</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{result.exchangeCharges.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">GST</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{result.gst.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <h3 className="font-semibold text-lg">SEBI Charges</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{result.sebiCharges.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Stamp Duty</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{result.stampDuty.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Total Charges</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    ₹{result.totalCharges.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Net P&L</h3>
+                  <p
+                    className={`text-2xl font-bold ${
+                      result.netProfitLoss >= 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    ₹{result.netProfitLoss.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-6">
+                <h3 className="font-semibold text-lg mb-2">
+                  Break-even Analysis
+                </h3>
+                <p className="text-primary">
+                  To break even, the stock needs to reach{" "}
+                  <span className="font-bold">
+                    ₹{result.breakEvenPrice.toFixed(2)}
+                  </span>
+                </p>
               </div>
             </Card>
           </div>
         )}
+
+        <BrokerageInformation />
       </div>
     </BaseCalculator>
   );

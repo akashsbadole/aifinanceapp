@@ -109,7 +109,7 @@ const Footer: React.FC<FooterProps> = ({ calculators }) => {
 
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">Tools</h3>
-            <ul className="space-y-2 max-h-[200px] overflow-y-auto">
+            <ul className="space-y-2 max-h-full ">
               {calculators.map((calc) => (
                 <li key={calc.path}>
                   <Link

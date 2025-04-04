@@ -1,270 +1,204 @@
-import React, { useState } from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BaseCalculator from './BaseCalculator';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import CalculatorHeader from "./CalculatorHeader";
+import CalculatorFooter from "./CalculatorFooter";
+import MutualFundInformation from "./information/MutualFundInformation";
+
+interface CalculationResult {
+  futureValue: number;
+  totalInvestment: number;
+  returns: number;
+  cagr: number;
+}
 
 const MutualFundCalculator = () => {
-  // Lump Sum State
-  const [lumpSumAmount, setLumpSumAmount] = useState<string>('');
-  const [lumpSumReturn, setLumpSumReturn] = useState<string>('');
-  const [lumpSumPeriod, setLumpSumPeriod] = useState<string>('');
+  const [investmentType, setInvestmentType] = useState<"lumpsum" | "sip">(
+    "lumpsum"
+  );
+  const [amount, setAmount] = useState<string>("");
+  const [duration, setDuration] = useState<string>("");
+  const [expectedReturn, setExpectedReturn] = useState<string>("");
+  const [frequency, setFrequency] = useState<
+    "monthly" | "quarterly" | "yearly"
+  >("monthly");
+  const [result, setResult] = useState<CalculationResult | null>(null);
 
-  // SIP State
-  const [monthlyInvestment, setMonthlyInvestment] = useState<string>('');
-  const [sipReturn, setSipReturn] = useState<string>('');
-  const [sipPeriod, setSipPeriod] = useState<string>('');
+  const calculateReturns = () => {
+    const principal = parseFloat(amount);
+    const years = parseFloat(duration);
+    const rate = parseFloat(expectedReturn) / 100;
 
-  // Results State
-  const [lumpSumResult, setLumpSumResult] = useState<{
-    investedAmount: number;
-    totalValue: number;
-    totalReturns: number;
-    absoluteReturn: number;
-    cagr: number;
-  } | null>(null);
+    if (investmentType === "lumpsum") {
+      const futureValue = principal * Math.pow(1 + rate, years);
+      const returns = futureValue - principal;
+      const cagr = (Math.pow(futureValue / principal, 1 / years) - 1) * 100;
 
-  const [sipResult, setSipResult] = useState<{
-    totalInvestment: number;
-    totalValue: number;
-    totalReturns: number;
-    xirr: number;
-    yearlyBreakdown: Array<{
-      year: number;
-      investment: number;
-      value: number;
-      returns: number;
-    }>;
-  } | null>(null);
+      setResult({
+        futureValue,
+        totalInvestment: principal,
+        returns,
+        cagr,
+      });
+    } else {
+      let periodsPerYear =
+        frequency === "monthly" ? 12 : frequency === "quarterly" ? 4 : 1;
+      let totalPeriods = years * periodsPerYear;
+      let ratePerPeriod = rate / periodsPerYear;
 
-  const calculateLumpSum = () => {
-    const principal = parseFloat(lumpSumAmount);
-    const rate = parseFloat(lumpSumReturn) / 100;
-    const years = parseFloat(lumpSumPeriod);
+      const futureValue =
+        principal *
+        ((Math.pow(1 + ratePerPeriod, totalPeriods) - 1) / ratePerPeriod) *
+        (1 + ratePerPeriod);
+      const totalInvestment = principal * totalPeriods;
+      const returns = futureValue - totalInvestment;
+      const cagr =
+        (Math.pow(futureValue / totalInvestment, 1 / years) - 1) * 100;
 
-    const totalValue = principal * Math.pow(1 + rate, years);
-    const totalReturns = totalValue - principal;
-    const absoluteReturn = (totalReturns / principal) * 100;
-    const cagr = (Math.pow(totalValue / principal, 1 / years) - 1) * 100;
-
-    setLumpSumResult({
-      investedAmount: principal,
-      totalValue,
-      totalReturns,
-      absoluteReturn,
-      cagr
-    });
-  };
-
-  const calculateSIP = () => {
-    const monthly = parseFloat(monthlyInvestment);
-    const rate = parseFloat(sipReturn) / 100;
-    const years = parseFloat(sipPeriod);
-    
-    const monthlyRate = rate / 12;
-    const months = years * 12;
-    const totalInvestment = monthly * months;
-
-    let totalValue = 0;
-    const yearlyBreakdown = [];
-
-    // Calculate year by year
-    for (let year = 1; year <= years; year++) {
-      let yearlyInvestment = monthly * 12;
-      let yearStartValue = totalValue;
-
-      // Calculate monthly compounding for this year
-      for (let month = 1; month <= 12; month++) {
-        totalValue = (totalValue + monthly) * (1 + monthlyRate);
-      }
-
-      yearlyBreakdown.push({
-        year,
-        investment: yearlyInvestment,
-        value: totalValue,
-        returns: totalValue - yearStartValue - yearlyInvestment
+      setResult({
+        futureValue,
+        totalInvestment,
+        returns,
+        cagr,
       });
     }
-
-    // Calculate XIRR (approximation using simplified method)
-    const totalReturns = totalValue - totalInvestment;
-    const xirr = ((Math.pow(totalValue / totalInvestment, 1 / years) - 1) * 100);
-
-    setSipResult({
-      totalInvestment,
-      totalValue,
-      totalReturns,
-      xirr,
-      yearlyBreakdown
-    });
   };
 
   return (
-    <BaseCalculator title="Mutual Fund Returns Calculator">
-      <Tabs defaultValue="lumpsum" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="lumpsum">Lump Sum Investment</TabsTrigger>
-          <TabsTrigger value="sip">SIP Investment</TabsTrigger>
-        </TabsList>
+    <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+      <CalculatorHeader
+        title="Mutual Fund Calculator"
+        description="Calculate potential returns on your mutual fund investments through lump sum or SIP investments."
+      />
 
-        <TabsContent value="lumpsum">
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="lumpSumAmount">Investment Amount (₹)</Label>
-              <Input
-                id="lumpSumAmount"
-                type="number"
-                value={lumpSumAmount}
-                onChange={(e) => setLumpSumAmount(e.target.value)}
-                placeholder="Enter investment amount"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="lumpSumReturn">Expected Return (% p.a.)</Label>
-              <Input
-                id="lumpSumReturn"
-                type="number"
-                value={lumpSumReturn}
-                onChange={(e) => setLumpSumReturn(e.target.value)}
-                placeholder="Enter expected return"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="lumpSumPeriod">Investment Period (Years)</Label>
-              <Input
-                id="lumpSumPeriod"
-                type="number"
-                value={lumpSumPeriod}
-                onChange={(e) => setLumpSumPeriod(e.target.value)}
-                placeholder="Enter investment period"
-              />
-            </div>
-
-            <Button onClick={calculateLumpSum}>Calculate Returns</Button>
-
-            {lumpSumResult && (
-              <Card>
-                <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-                  <div>
-                    <h3 className="font-semibold text-lg">Invested Amount</h3>
-                    <p className="text-2xl font-bold text-primary">₹{lumpSumResult.investedAmount.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">Total Value</h3>
-                    <p className="text-2xl font-bold text-primary">₹{lumpSumResult.totalValue.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">Total Returns</h3>
-                    <p className="text-2xl font-bold text-primary">₹{lumpSumResult.totalReturns.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">Absolute Return</h3>
-                    <p className="text-2xl font-bold text-primary">{lumpSumResult.absoluteReturn.toFixed(2)}%</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">CAGR</h3>
-                    <p className="text-2xl font-bold text-primary">{lumpSumResult.cagr.toFixed(2)}%</p>
-                  </div>
-                </div>
-              </Card>
-            )}
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div className="flex flex-col space-y-2">
+            <Label>Investment Type</Label>
+            <Select
+              value={investmentType}
+              onValueChange={(value: "lumpsum" | "sip") =>
+                setInvestmentType(value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select investment type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="lumpsum">Lump Sum</SelectItem>
+                <SelectItem value="sip">SIP</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </TabsContent>
 
-        <TabsContent value="sip">
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="monthlyInvestment">Monthly Investment (₹)</Label>
-              <Input
-                id="monthlyInvestment"
-                type="number"
-                value={monthlyInvestment}
-                onChange={(e) => setMonthlyInvestment(e.target.value)}
-                placeholder="Enter monthly investment amount"
-              />
+          {investmentType === "sip" && (
+            <div className="flex flex-col space-y-2">
+              <Label>Frequency</Label>
+              <Select
+                value={frequency}
+                onValueChange={(value: "monthly" | "quarterly" | "yearly") =>
+                  setFrequency(value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+          )}
 
-            <div className="grid gap-2">
-              <Label htmlFor="sipReturn">Expected Return (% p.a.)</Label>
-              <Input
-                id="sipReturn"
-                type="number"
-                value={sipReturn}
-                onChange={(e) => setSipReturn(e.target.value)}
-                placeholder="Enter expected return"
-              />
-            </div>
+          <div className="flex flex-col space-y-2">
+            <Label>
+              {investmentType === "lumpsum"
+                ? "Investment Amount"
+                : "Installment Amount"}{" "}
+              (₹)
+            </Label>
+            <Input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount"
+            />
+          </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="sipPeriod">Investment Period (Years)</Label>
-              <Input
-                id="sipPeriod"
-                type="number"
-                value={sipPeriod}
-                onChange={(e) => setSipPeriod(e.target.value)}
-                placeholder="Enter investment period"
-              />
-            </div>
+          <div className="flex flex-col space-y-2">
+            <Label>Investment Duration (Years)</Label>
+            <Input
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="Enter duration"
+            />
+          </div>
 
-            <Button onClick={calculateSIP}>Calculate Returns</Button>
+          <div className="flex flex-col space-y-2">
+            <Label>Expected Annual Return (%)</Label>
+            <Input
+              type="number"
+              value={expectedReturn}
+              onChange={(e) => setExpectedReturn(e.target.value)}
+              placeholder="Enter expected return"
+            />
+          </div>
 
-            {sipResult && (
-              <div className="space-y-6">
-                <Card>
-                  <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div>
-                      <h3 className="font-semibold text-lg">Total Investment</h3>
-                      <p className="text-2xl font-bold text-primary">₹{sipResult.totalInvestment.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Total Value</h3>
-                      <p className="text-2xl font-bold text-primary">₹{sipResult.totalValue.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Total Returns</h3>
-                      <p className="text-2xl font-bold text-primary">₹{sipResult.totalReturns.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">XIRR</h3>
-                      <p className="text-2xl font-bold text-primary">{sipResult.xirr.toFixed(2)}%</p>
-                    </div>
-                  </div>
-                </Card>
+          <Button
+            onClick={calculateReturns}
+            className="w-full"
+            disabled={!amount || !duration || !expectedReturn}
+          >
+            Calculate
+          </Button>
+        </div>
 
-                <Card>
-                  <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-4">Year-wise Breakdown</h3>
-                    <div className="grid gap-4">
-                      {sipResult.yearlyBreakdown.map((year) => (
-                        <div key={year.year} className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                          <div>
-                            <h4 className="text-sm text-muted-foreground">Year {year.year}</h4>
-                            <p className="font-semibold">Investment</p>
-                            <p className="text-primary">₹{year.investment.toFixed(2)}</p>
-                          </div>
-                          <div>
-                            <p className="font-semibold">Value</p>
-                            <p className="text-primary">₹{year.value.toFixed(2)}</p>
-                          </div>
-                          <div>
-                            <p className="font-semibold">Returns</p>
-                            <p className="text-primary">₹{year.returns.toFixed(2)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </Card>
+        {result && (
+          <div className="mt-6 space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-secondary rounded-lg">
+                <p className="text-sm font-medium">Future Value</p>
+                <p className="text-lg font-bold">
+                  ₹{result.futureValue.toFixed(2)}
+                </p>
               </div>
-            )}
+              <div className="p-4 bg-secondary rounded-lg">
+                <p className="text-sm font-medium">Total Investment</p>
+                <p className="text-lg font-bold">
+                  ₹{result.totalInvestment.toFixed(2)}
+                </p>
+              </div>
+              <div className="p-4 bg-secondary rounded-lg">
+                <p className="text-sm font-medium">Total Returns</p>
+                <p className="text-lg font-bold">
+                  ₹{result.returns.toFixed(2)}
+                </p>
+              </div>
+              <div className="p-4 bg-secondary rounded-lg">
+                <p className="text-sm font-medium">CAGR</p>
+                <p className="text-lg font-bold">{result.cagr.toFixed(2)}%</p>
+              </div>
+            </div>
           </div>
-        </TabsContent>
-      </Tabs>
-    </BaseCalculator>
+        )}
+      </Card>
+
+      <MutualFundInformation />
+
+      <CalculatorFooter />
+    </div>
   );
 };
 
