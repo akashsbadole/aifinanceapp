@@ -27,9 +27,16 @@ import ProductManagement from "@/pages/inventory/ProductManagement";
 import StockManagement from "@/pages/inventory/StockManagement";
 import SalesTransactions from "@/pages/inventory/SalesTransactions";
 import POS from "./pages/POS";
-import EMICalculator from "./pages/calculators/EMICalculator";
-import SIPCalculator from "./pages/calculators/SIPCalculator";
-import FDCalculator from "./pages/calculators/FDCalculator";
+import EMICalculator from "@/components/calculators/EMICalculator";
+import SIPCalculator from "@/components/calculators/SIPCalculator";
+import FDCalculator from "@/components/calculators/FDCalculator";
+import MarginCalculator from "@/components/calculators/MarginCalculator";
+import PPFCalculator from "@/components/calculators/PPFCalculator";
+import RDCalculator from "@/components/calculators/RDCalculator";
+import SSYCalculator from "@/components/calculators/SSYCalculator";
+import SWPCalculator from "@/components/calculators/SWPCalculator";
+import MutualFundCalculator from "@/components/calculators/MutualFundCalculator";
+import BrokerageCalculator from "@/components/calculators/BrokerageCalculator";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +49,26 @@ const App: React.FC = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+
+            {/* Calculator Routes */}
+            <Route path="/calculators/emi" element={<EMICalculator />} />
+            <Route path="/calculators/sip" element={<SIPCalculator />} />
+            <Route path="/calculators/fd" element={<FDCalculator />} />
+            <Route path="/calculators/margin" element={<MarginCalculator />} />
+            <Route path="/calculators/ppf" element={<PPFCalculator />} />
+            <Route path="/calculators/rd" element={<RDCalculator />} />
+            <Route path="/calculators/ssy" element={<SSYCalculator />} />
+            <Route path="/calculators/swp" element={<SWPCalculator />} />
+            <Route
+              path="/calculators/mutual-fund"
+              element={<MutualFundCalculator />}
+            />
+            <Route
+              path="/calculators/brokerage"
+              element={<BrokerageCalculator />}
+            />
+
+            {/* Dashboard Routes */}
             <Route
               path="/dashboard"
               element={
@@ -194,31 +221,7 @@ const App: React.FC = () => {
                 </DashboardLayout>
               }
             />
-            {/* Calculator Routes */}
-            <Route
-              path="/calculators/emi"
-              element={
-                <DashboardLayout>
-                  <EMICalculator />
-                </DashboardLayout>
-              }
-            />
-            <Route
-              path="/calculators/sip"
-              element={
-                <DashboardLayout>
-                  <SIPCalculator />
-                </DashboardLayout>
-              }
-            />
-            <Route
-              path="/calculators/fd"
-              element={
-                <DashboardLayout>
-                  <FDCalculator />
-                </DashboardLayout>
-              }
-            />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
