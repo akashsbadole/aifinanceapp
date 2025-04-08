@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Accordion,
   AccordionContent,
@@ -12,8 +12,16 @@ const MutualFundInformation = () => {
     { name: "SBI Bluechip Fund", category: "Large Cap", returns: "12-15%" },
     { name: "Axis Midcap Fund", category: "Mid Cap", returns: "15-18%" },
     { name: "HDFC Balanced Advantage", category: "Hybrid", returns: "10-12%" },
-    { name: "Mirae Asset Emerging Bluechip", category: "Large & Mid Cap", returns: "14-16%" },
-    { name: "Parag Parikh Flexi Cap", category: "Flexi Cap", returns: "13-15%" },
+    {
+      name: "Mirae Asset Emerging Bluechip",
+      category: "Large & Mid Cap",
+      returns: "14-16%",
+    },
+    {
+      name: "Parag Parikh Flexi Cap",
+      category: "Flexi Cap",
+      returns: "13-15%",
+    },
   ];
 
   return (
@@ -22,7 +30,13 @@ const MutualFundInformation = () => {
         <AccordionItem value="what-are-mfs">
           <AccordionTrigger>What are Mutual Funds?</AccordionTrigger>
           <AccordionContent>
-            <p>Mutual Funds are investment vehicles that pool money from multiple investors to invest in stocks, bonds, and other securities. They are professionally managed and offer diversification benefits. Different types of funds cater to various investment objectives and risk appetites.</p>
+            <p>
+              Mutual Funds are investment vehicles that pool money from multiple
+              investors to invest in stocks, bonds, and other securities. They
+              are professionally managed and offer diversification benefits.
+              Different types of funds cater to various investment objectives
+              and risk appetites.
+            </p>
           </AccordionContent>
         </AccordionItem>
 
@@ -30,17 +44,27 @@ const MutualFundInformation = () => {
           <AccordionTrigger>Types of Mutual Funds</AccordionTrigger>
           <AccordionContent>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Equity Funds:</strong> Invest primarily in stocks
+              <li>
+                <strong>Equity Funds:</strong> Invest primarily in stocks
                 <ul className="list-disc pl-6 mt-1">
                   <li>Large Cap: Lower risk, stable returns</li>
                   <li>Mid Cap: Moderate risk, higher growth potential</li>
                   <li>Small Cap: High risk, highest growth potential</li>
                 </ul>
               </li>
-              <li><strong>Debt Funds:</strong> Invest in bonds and fixed-income securities</li>
-              <li><strong>Hybrid Funds:</strong> Mix of equity and debt</li>
-              <li><strong>Index Funds:</strong> Track market indices</li>
-              <li><strong>Sector Funds:</strong> Focus on specific industries</li>
+              <li>
+                <strong>Debt Funds:</strong> Invest in bonds and fixed-income
+                securities
+              </li>
+              <li>
+                <strong>Hybrid Funds:</strong> Mix of equity and debt
+              </li>
+              <li>
+                <strong>Index Funds:</strong> Track market indices
+              </li>
+              <li>
+                <strong>Sector Funds:</strong> Focus on specific industries
+              </li>
             </ul>
           </AccordionContent>
         </AccordionItem>
@@ -83,13 +107,18 @@ const MutualFundInformation = () => {
                 <div key={index} className="flex flex-col space-y-1">
                   <div className="flex justify-between">
                     <span className="font-medium">{fund.name}</span>
-                    <span className="text-muted-foreground">Returns: {fund.returns}</span>
+                    <span className="text-muted-foreground">
+                      Returns: {fund.returns}
+                    </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">Category: {fund.category}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Category: {fund.category}
+                  </span>
                 </div>
               ))}
               <p className="text-sm text-muted-foreground mt-4">
-                *Historical returns (3-5 years) as of 2025. Past performance doesn't guarantee future returns.
+                *Historical returns (3-5 years) as of 2025. Past performance
+                doesn't guarantee future returns.
               </p>
             </div>
           </AccordionContent>
@@ -102,12 +131,12 @@ const MutualFundInformation = () => {
               <p>Equity Funds:</p>
               <ul className="list-disc pl-6">
                 <li>STCG (held ≤ 1 year): 15% + surcharge</li>
-                <li>LTCG (held > 1 year): 10% above ₹1 lakh per year</li>
+                <li>LTCG (held &gt; 1 year): 10% above ₹1 lakh per year</li>
               </ul>
               <p className="mt-2">Debt Funds:</p>
               <ul className="list-disc pl-6">
                 <li>STCG (held ≤ 3 years): As per income tax slab</li>
-                <li>LTCG (held > 3 years): 20% with indexation</li>
+                <li>LTCG (held &gt; 3 years): 20% with indexation</li>
               </ul>
               <p className="mt-2">ELSS Funds:</p>
               <ul className="list-disc pl-6">
@@ -124,7 +153,8 @@ const MutualFundInformation = () => {
             <ul className="list-disc pl-6 space-y-2">
               <li>Start early to benefit from compounding</li>
               <li>Diversify across fund categories</li>
-              <li>Choose funds based on:
+              <li>
+                Choose funds based on:
                 <ul className="list-disc pl-6 mt-1">
                   <li>Investment horizon</li>
                   <li>Risk tolerance</li>
