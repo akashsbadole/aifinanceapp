@@ -21,6 +21,7 @@ import {
   Package,
   Boxes,
   Store,
+  TrendingUp,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -201,6 +202,20 @@ const Sidebar = ({ className }: SidebarProps) => {
               to="/reports"
               icon={<BarChart4 size={18} />}
               label="Reports"
+            />
+          </div>
+        </div>
+
+        {/* Market Data Section */}
+        <div className="px-4 py-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Market Data
+          </h3>
+          <div className="space-y-1">
+            <SidebarItem
+              to="/market-data"
+              icon={<TrendingUp size={18} />}
+              label="Stock Market"
             />
           </div>
         </div>

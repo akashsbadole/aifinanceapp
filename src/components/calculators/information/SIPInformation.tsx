@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Accordion,
   AccordionContent,
@@ -22,7 +22,13 @@ const SIPInformation = () => {
         <AccordionItem value="what-is-sip">
           <AccordionTrigger>What is SIP?</AccordionTrigger>
           <AccordionContent>
-            <p>A Systematic Investment Plan (SIP) is an investment strategy where you invest a fixed amount in mutual funds at regular intervals (usually monthly) instead of making a lump-sum investment. This method follows the principle of rupee cost averaging and helps build a disciplined investment habit.</p>
+            <p>
+              A Systematic Investment Plan (SIP) is an investment strategy where
+              you invest a fixed amount in mutual funds at regular intervals
+              (usually monthly) instead of making a lump-sum investment. This
+              method follows the principle of rupee cost averaging and helps
+              build a disciplined investment habit.
+            </p>
           </AccordionContent>
         </AccordionItem>
 
@@ -31,7 +37,9 @@ const SIPInformation = () => {
           <AccordionContent>
             <ul className="list-disc pl-6 space-y-2">
               <li>Disciplined investing habit</li>
-              <li>Rupee cost averaging - reduces impact of market volatility</li>
+              <li>
+                Rupee cost averaging - reduces impact of market volatility
+              </li>
               <li>Power of compounding</li>
               <li>Start with small amounts (as low as ₹500)</li>
               <li>Flexibility to modify or stop investments</li>
@@ -46,7 +54,10 @@ const SIPInformation = () => {
           <AccordionContent>
             <ul className="list-disc pl-6 space-y-2">
               <li>Market risk - Returns are not guaranteed</li>
-              <li>May underperform in consistently rising markets compared to lump sum</li>
+              <li>
+                May underperform in consistently rising markets compared to lump
+                sum
+              </li>
               <li>Requires long-term commitment for best results</li>
               <li>Impact of fees and expenses over time</li>
               <li>Exit load applicable on early withdrawals</li>
@@ -92,12 +103,14 @@ const SIPInformation = () => {
               <p>For Equity Mutual Funds:</p>
               <ul className="list-disc pl-6">
                 <li>STCG (held ≤ 1 year): 15% + applicable surcharge</li>
-                <li>LTCG (held > 1 year): 10% on gains above ₹1 lakh per year</li>
+                <li>
+                  LTCG (held &gt; 1 year): 10% on gains above ₹1 lakh per year
+                </li>
               </ul>
               <p className="mt-2">For Debt Mutual Funds:</p>
               <ul className="list-disc pl-6">
                 <li>STCG (held ≤ 3 years): Taxed at income tax slab rate</li>
-                <li>LTCG (held > 3 years): 20% with indexation benefit</li>
+                <li>LTCG (held &gt; 3 years): 20% with indexation benefit</li>
               </ul>
             </div>
           </AccordionContent>

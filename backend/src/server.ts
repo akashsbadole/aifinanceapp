@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import expenseRoutes from './routes/expenseRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
+import companyRoutes from './routes/companyRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(express.json());
 // Routes
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api', companyRoutes); // Adding company routes
 
 // Default categories for expenses
 const defaultCategories = [

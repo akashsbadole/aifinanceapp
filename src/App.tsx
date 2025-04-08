@@ -38,6 +38,7 @@ import SWPCalculator from "@/components/calculators/SWPCalculator";
 import MutualFundCalculator from "@/components/calculators/MutualFundCalculator";
 import BrokerageCalculator from "@/components/calculators/BrokerageCalculator";
 import CalculatorLanding from "./pages/CalculatorLanding";
+import Companies from "./pages/Companies";
 
 const queryClient = new QueryClient();
 
@@ -220,6 +221,14 @@ const App: React.FC = () => {
               element={
                 <DashboardLayout>
                   <POS />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/market-data"
+              element={
+                <DashboardLayout>
+                  <Companies />
                 </DashboardLayout>
               }
             />
