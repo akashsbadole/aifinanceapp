@@ -187,7 +187,7 @@ const POS = () => {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/inventory/products"
+        "http://localhost:3002/api/inventory/products"
       );
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
@@ -232,7 +232,7 @@ const POS = () => {
   const handleCheckout = async () => {
     setLoading(true);
     try {
-      const saleResponse = await fetch("http://localhost:3001/pos/sale", {
+      const saleResponse = await fetch("http://localhost:3002/pos/sale", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -252,7 +252,7 @@ const POS = () => {
       }
       const saleData = await saleResponse.json();
 
-      const paymentResponse = await fetch("http://localhost:3001/pos/payment", {
+      const paymentResponse = await fetch("http://localhost:3002/pos/payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

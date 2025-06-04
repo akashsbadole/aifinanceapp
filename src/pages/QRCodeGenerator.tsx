@@ -1,15 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 // import Navbar from '@/components/layout/Navbar';
-import Sidebar from '@/components/layout/Sidebar';
+import Sidebar from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, Link as LinkIcon, MessageSquare, Phone, Mail, User } from 'lucide-react';
-import QRCode from 'qrcode';
+import {
+  Download,
+  Link as LinkIcon,
+  MessageSquare,
+  Phone,
+  Mail,
+  User,
+} from "lucide-react";
+import QRCode from "qrcode";
 
-type QRType = 'text' | 'url' | 'whatsapp' | 'phone' | 'contact' | 'vcard';
+type QRType = "text" | "url" | "whatsapp" | "phone" | "contact" | "vcard";
 
 interface ContactData {
   name: string;
@@ -29,38 +36,40 @@ interface FormData {
 }
 
 const QRCodeGenerator: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<QRType>('text');
-  const [qrUrl, setQrUrl] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<QRType>("text");
+  const [qrUrl, setQrUrl] = useState<string>("");
   const [size, setSize] = useState<number>(850);
   const [formData, setFormData] = useState<FormData>({
-    type: 'text',
-    content: '',
+    type: "text",
+    content: "",
     size: 850,
     contactData: {
-      name: '',
-      phone: '',
-      email: '',
-      url: '',
-      company: '',
-      title: ''
+      name: "",
+      phone: "",
+      email: "",
+      url: "",
+      company: "",
+      title: "",
     },
-    whatsappMessage: ''
+    whatsappMessage: "",
   });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const generateVCard = (data: ContactData) => {
     const vcard = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
+      "BEGIN:VCARD",
+      "VERSION:3.0",
       `FN:${data.name}`,
       `TEL;TYPE=CELL:${data.phone}`,
       `EMAIL:${data.email}`,
       data.url && `URL:${data.url}`,
       data.company && `ORG:${data.company}`,
       data.title && `TITLE:${data.title}`,
-      'END:VCARD'
-    ].filter(Boolean).join('\n');
+      "END:VCARD",
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     return vcard;
   };
@@ -68,26 +77,31 @@ const QRCodeGenerator: React.FC = () => {
   const generateQRCode = async (content: string) => {
     try {
       let finalContent = content;
-      
+
       // Format content based on type
       switch (formData.type) {
-        case 'url':
-          if (!content.startsWith('http://') && !content.startsWith('https://')) {
-            finalContent = 'https://' + content;
+        case "url":
+          if (
+            !content.startsWith("http://") &&
+            !content.startsWith("https://")
+          ) {
+            finalContent = "https://" + content;
           }
           break;
-        case 'whatsapp':
-          const phone = content.replace(/[^0-9]/g, '');
-          const message = encodeURIComponent(formData.whatsappMessage || '');
-          finalContent = `https://wa.me/${phone}${message ? '?text=' + message : ''}`;
+        case "whatsapp":
+          const phone = content.replace(/[^0-9]/g, "");
+          const message = encodeURIComponent(formData.whatsappMessage || "");
+          finalContent = `https://wa.me/${phone}${
+            message ? "?text=" + message : ""
+          }`;
           break;
-        case 'phone':
-          finalContent = `tel:${content.replace(/[^0-9]/g, '')}`;
+        case "phone":
+          finalContent = `tel:${content.replace(/[^0-9]/g, "")}`;
           break;
-        case 'contact':
+        case "contact":
           finalContent = `mailto:${content}`;
           break;
-        case 'vcard':
+        case "vcard":
           finalContent = generateVCard(formData.contactData);
           break;
       }
@@ -96,61 +110,72 @@ const QRCodeGenerator: React.FC = () => {
         width: size,
         margin: 1,
         color: {
-          dark: '#000000',
-          light: '#ffffff'
+          dark: "#000000",
+          light: "#ffffff",
         },
-        errorCorrectionLevel: 'H' as const
+        errorCorrectionLevel: "H" as const,
       };
 
       const url = await QRCode.toDataURL(finalContent, options);
       setQrUrl(url);
     } catch (error) {
-      console.error('Error generating QR code:', error);
+      console.error("Error generating QR code:", error);
     }
   };
 
   useEffect(() => {
-    if (formData.content || formData.type === 'vcard') {
-      generateQRCode(formData.type === 'vcard' ? 'generating...' : formData.content);
+    if (formData.content || formData.type === "vcard") {
+      generateQRCode(
+        formData.type === "vcard" ? "generating..." : formData.content
+      );
     }
-  }, [formData.content, formData.type, size, formData.contactData, formData.whatsappMessage]);
+  }, [
+    formData.content,
+    formData.type,
+    size,
+    formData.contactData,
+    formData.whatsappMessage,
+  ]);
 
-  const handleDownload = (format: 'png' | 'jpg' | 'pdf') => {
+  const handleDownload = (format: "png" | "jpg" | "pdf") => {
     if (!qrUrl) return;
 
-    const link = document.createElement('a');
-    
-    if (format === 'pdf') {
+    const link = document.createElement("a");
+
+    if (format === "pdf") {
       // Create PDF with QR code
-      import('jspdf').then(({ default: jsPDF }) => {
+      import("jspdf").then(({ default: jsPDF }) => {
         const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
         });
-        
+
         const imgWidth = 150;
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const x = (pageWidth - imgWidth) / 2;
         const y = 20;
 
-        pdf.addImage(qrUrl, 'PNG', x, y, imgWidth, imgWidth);
-        
+        pdf.addImage(qrUrl, "PNG", x, y, imgWidth, imgWidth);
+
         // Add contact information if it's a vCard or WhatsApp
-        if (formData.type === 'vcard' || formData.type === 'whatsapp') {
+        if (formData.type === "vcard" || formData.type === "whatsapp") {
           pdf.setFontSize(12);
           let textY = y + imgWidth + 10;
-          
-          if (formData.type === 'vcard') {
+
+          if (formData.type === "vcard") {
             const { contactData } = formData;
             pdf.text(`Name: ${contactData.name}`, 20, textY);
             pdf.text(`Phone: ${contactData.phone}`, 20, textY + 7);
             pdf.text(`Email: ${contactData.email}`, 20, textY + 14);
-            if (contactData.url) pdf.text(`Website: ${contactData.url}`, 20, textY + 21);
-            if (contactData.company) pdf.text(`Company: ${contactData.company}`, 20, textY + 28);
-            if (contactData.title) pdf.text(`Title: ${contactData.title}`, 20, textY + 35);
-          } else if (formData.type === 'whatsapp') {
+            if (contactData.url)
+              pdf.text(`Website: ${contactData.url}`, 20, textY + 21);
+            if (contactData.company)
+              pdf.text(`Company: ${contactData.company}`, 20, textY + 28);
+            if (contactData.title)
+              pdf.text(`Title: ${contactData.title}`, 20, textY + 35);
+          } else if (formData.type === "whatsapp") {
             pdf.text(`WhatsApp: ${formData.content}`, 20, textY);
             if (formData.whatsappMessage) {
               pdf.text(`Message: ${formData.whatsappMessage}`, 20, textY + 7);
@@ -158,7 +183,7 @@ const QRCodeGenerator: React.FC = () => {
           }
         }
 
-        pdf.save('qr-code.pdf');
+        pdf.save("qr-code.pdf");
       });
     } else {
       // Download as image
@@ -172,211 +197,256 @@ const QRCodeGenerator: React.FC = () => {
 
   const getPlaceholder = () => {
     switch (activeTab) {
-      case 'url':
-        return 'Enter website URL';
-      case 'whatsapp':
-        return 'Enter WhatsApp number';
-      case 'phone':
-        return 'Enter phone number';
-      case 'contact':
-        return 'Enter email address';
-      case 'vcard':
-        return 'Fill contact details below';
+      case "url":
+        return "Enter website URL";
+      case "whatsapp":
+        return "Enter WhatsApp number";
+      case "phone":
+        return "Enter phone number";
+      case "contact":
+        return "Enter email address";
+      case "vcard":
+        return "Fill contact details below";
       default:
-        return 'Enter text';
+        return "Enter text";
     }
   };
 
   const handleContactDataChange = (field: keyof ContactData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       contactData: {
         ...prev.contactData,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* <Navbar /> */}
-      <Sidebar />
-      
-      <main className="ml-2 pt-2 min-h-screen">
-        <div className="p-6 max-w-7xl mx-auto animate-on-mount">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-bold">QR Code Generator</h1>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">QR Code Generator</h1>
+          <p className="text-muted-foreground">
+            Generate QR codes for various purposes
+          </p>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="p-6">
-              <Tabs value={activeTab} onValueChange={(value) => {
-                setActiveTab(value as QRType);
-                setFormData(prev => ({ 
-                  ...prev, 
-                  type: value as QRType, 
-                  content: '',
-                  whatsappMessage: ''
-                }));
-              }}>
-                <TabsList className="grid grid-cols-6 w-full">
-                  <TabsTrigger value="text">Text</TabsTrigger>
-                  <TabsTrigger value="url">URL</TabsTrigger>
-                  <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
-                  <TabsTrigger value="phone">Phone</TabsTrigger>
-                  <TabsTrigger value="contact">Email</TabsTrigger>
-                  <TabsTrigger value="vcard">vCard</TabsTrigger>
-                </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-4 lg:p-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              setActiveTab(value as QRType);
+              setFormData((prev) => ({
+                ...prev,
+                type: value as QRType,
+                content: "",
+                whatsappMessage: "",
+              }));
+            }}
+          >
+            <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 w-full h-auto">
+              <TabsTrigger value="text" className="text-xs sm:text-sm">
+                Text
+              </TabsTrigger>
+              <TabsTrigger value="url" className="text-xs sm:text-sm">
+                URL
+              </TabsTrigger>
+              <TabsTrigger value="whatsapp" className="text-xs sm:text-sm">
+                WhatsApp
+              </TabsTrigger>
+              <TabsTrigger value="phone" className="text-xs sm:text-sm">
+                Phone
+              </TabsTrigger>
+              <TabsTrigger value="contact" className="text-xs sm:text-sm">
+                Email
+              </TabsTrigger>
+              <TabsTrigger value="vcard" className="text-xs sm:text-sm">
+                vCard
+              </TabsTrigger>
+            </TabsList>
 
-                <div className="mt-6 space-y-4">
-                  {activeTab !== 'vcard' && (
-                    <div>
-                      <Label>
-                        {activeTab === 'text' && 'Enter Text'}
-                        {activeTab === 'url' && 'Enter URL'}
-                        {activeTab === 'whatsapp' && 'Enter WhatsApp Number'}
-                        {activeTab === 'phone' && 'Enter Phone Number'}
-                        {activeTab === 'contact' && 'Enter Email Address'}
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={formData.content}
-                          onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                          placeholder={getPlaceholder()}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'whatsapp' && (
-                    <div>
-                      <Label>Message (Optional)</Label>
-                      <Input
-                        value={formData.whatsappMessage}
-                        onChange={(e) => setFormData(prev => ({ ...prev, whatsappMessage: e.target.value }))}
-                        placeholder="Enter pre-filled message"
-                      />
-                    </div>
-                  )}
-
-                  {activeTab === 'vcard' && (
-                    <div className="space-y-4">
-                      <div>
-                        <Label>Full Name</Label>
-                        <Input
-                          value={formData.contactData.name}
-                          onChange={(e) => handleContactDataChange('name', e.target.value)}
-                          placeholder="Enter full name"
-                        />
-                      </div>
-                      <div>
-                        <Label>Phone Number</Label>
-                        <Input
-                          value={formData.contactData.phone}
-                          onChange={(e) => handleContactDataChange('phone', e.target.value)}
-                          placeholder="Enter phone number"
-                        />
-                      </div>
-                      <div>
-                        <Label>Email</Label>
-                        <Input
-                          value={formData.contactData.email}
-                          onChange={(e) => handleContactDataChange('email', e.target.value)}
-                          placeholder="Enter email address"
-                        />
-                      </div>
-                      <div>
-                        <Label>Website</Label>
-                        <Input
-                          value={formData.contactData.url}
-                          onChange={(e) => handleContactDataChange('url', e.target.value)}
-                          placeholder="Enter website URL"
-                        />
-                      </div>
-                      <div>
-                        <Label>Company (Optional)</Label>
-                        <Input
-                          value={formData.contactData.company}
-                          onChange={(e) => handleContactDataChange('company', e.target.value)}
-                          placeholder="Enter company name"
-                        />
-                      </div>
-                      <div>
-                        <Label>Job Title (Optional)</Label>
-                        <Input
-                          value={formData.contactData.title}
-                          onChange={(e) => handleContactDataChange('title', e.target.value)}
-                          placeholder="Enter job title"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <Label>QR Code Size</Label>
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="range"
-                        min="100"
-                        max="2000"
-                        value={size}
-                        onChange={(e) => setSize(Number(e.target.value))}
-                        className="flex-1"
-                      />
-                      <span className="text-sm text-muted-foreground w-20 text-right">
-                        {size} x {size} px
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Tabs>
-            </Card>
-
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  {qrUrl && (
-                    <img 
-                      src={qrUrl} 
-                      alt="QR Code" 
-                      className="max-w-full h-auto border rounded-lg"
-                    />
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label>Download As</Label>
+            <div className="mt-6 space-y-4">
+              {activeTab !== "vcard" && (
+                <div>
+                  <Label>
+                    {activeTab === "text" && "Enter Text"}
+                    {activeTab === "url" && "Enter URL"}
+                    {activeTab === "whatsapp" && "Enter WhatsApp Number"}
+                    {activeTab === "phone" && "Enter Phone Number"}
+                    {activeTab === "contact" && "Enter Email Address"}
+                  </Label>
                   <div className="flex gap-2">
-                    <Button 
-                      onClick={() => handleDownload('png')} 
-                      disabled={!qrUrl}
-                      className="flex-1"
-                    >
-                      PNG
-                    </Button>
-                    <Button 
-                      onClick={() => handleDownload('jpg')} 
-                      disabled={!qrUrl}
-                      className="flex-1"
-                    >
-                      JPG
-                    </Button>
-                    <Button 
-                      onClick={() => handleDownload('pdf')} 
-                      disabled={!qrUrl}
-                      className="flex-1"
-                    >
-                      PDF
-                    </Button>
+                    <Input
+                      value={formData.content}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          content: e.target.value,
+                        }))
+                      }
+                      placeholder={getPlaceholder()}
+                    />
                   </div>
+                </div>
+              )}
+
+              {activeTab === "whatsapp" && (
+                <div>
+                  <Label>Message (Optional)</Label>
+                  <Input
+                    value={formData.whatsappMessage}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        whatsappMessage: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter pre-filled message"
+                  />
+                </div>
+              )}
+
+              {activeTab === "vcard" && (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Full Name</Label>
+                    <Input
+                      value={formData.contactData.name}
+                      onChange={(e) =>
+                        handleContactDataChange("name", e.target.value)
+                      }
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone Number</Label>
+                    <Input
+                      value={formData.contactData.phone}
+                      onChange={(e) =>
+                        handleContactDataChange("phone", e.target.value)
+                      }
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      value={formData.contactData.email}
+                      onChange={(e) =>
+                        handleContactDataChange("email", e.target.value)
+                      }
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  <div>
+                    <Label>Website</Label>
+                    <Input
+                      value={formData.contactData.url}
+                      onChange={(e) =>
+                        handleContactDataChange("url", e.target.value)
+                      }
+                      placeholder="Enter website URL"
+                    />
+                  </div>
+                  <div>
+                    <Label>Company (Optional)</Label>
+                    <Input
+                      value={formData.contactData.company}
+                      onChange={(e) =>
+                        handleContactDataChange("company", e.target.value)
+                      }
+                      placeholder="Enter company name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Job Title (Optional)</Label>
+                    <Input
+                      value={formData.contactData.title}
+                      onChange={(e) =>
+                        handleContactDataChange("title", e.target.value)
+                      }
+                      placeholder="Enter job title"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <Label>QR Code Size</Label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="100"
+                    max="2000"
+                    value={size}
+                    onChange={(e) => setSize(Number(e.target.value))}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-muted-foreground w-20 text-right">
+                    {size} x {size} px
+                  </span>
                 </div>
               </div>
-            </Card>
+            </div>
+          </Tabs>
+        </Card>
+
+        <Card className="p-4 lg:p-6">
+          <div className="space-y-4">
+            <h3 className="font-semibold">Generated QR Code</h3>
+            <div className="flex justify-center">
+              {qrUrl ? (
+                <img
+                  src={qrUrl}
+                  alt="QR Code"
+                  className="max-w-full h-auto border rounded-lg"
+                  style={{ maxWidth: "300px" }}
+                />
+              ) : (
+                <div className="w-64 h-64 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
+                  <div className="text-center text-muted-foreground">
+                    <div className="w-12 h-12 mx-auto mb-2 opacity-50 bg-muted rounded"></div>
+                    <p className="text-sm">QR Code will appear here</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Download As</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  onClick={() => handleDownload("png")}
+                  disabled={!qrUrl}
+                  size="sm"
+                >
+                  PNG
+                </Button>
+                <Button
+                  onClick={() => handleDownload("jpg")}
+                  disabled={!qrUrl}
+                  size="sm"
+                >
+                  JPG
+                </Button>
+                <Button
+                  onClick={() => handleDownload("pdf")}
+                  disabled={!qrUrl}
+                  size="sm"
+                >
+                  PDF
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </main>
+        </Card>
+      </div>
     </div>
   );
 };
 
-export default QRCodeGenerator; 
+export default QRCodeGenerator;

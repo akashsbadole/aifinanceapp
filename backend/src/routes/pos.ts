@@ -1,35 +1,35 @@
-import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
 
 const router = Router();
 const prisma = new PrismaClient();
 
 // Get all products for POS
-router.get('/products', async (req, res) => {
+router.get("/products", async (req, res) => {
   try {
     const products = await prisma.product.findMany({
       where: {
         stockQuantity: {
-          gt: 0
-        }
+          gt: 0,
+        },
       },
       select: {
         id: true,
         name: true,
         sellingPrice: true,
-        stockQuantity: true
-      }
+        stockQuantity: true,
+      },
     });
     res.json(products);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch products' });
+    res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 
 // Create a new sale
-router.post('/sale', async (req, res) => {
+router.post("/sale", async (req, res) => {
   const { customerName, totalAmount, paymentMethod, items } = req.body;
-  
+
   try {
     const sale = await prisma.$transaction(async (prisma) => {
       // Create the sale
@@ -43,10 +43,10 @@ router.post('/sale', async (req, res) => {
               productId: item.productId,
               quantity: item.quantity,
               price: item.price,
-              total: item.total
-            }))
-          }
-        }
+              total: item.total,
+            })),
+          },
+        },
       });
 
       // Update stock quantities
@@ -55,9 +55,9 @@ router.post('/sale', async (req, res) => {
           where: { id: item.productId },
           data: {
             stockQuantity: {
-              decrement: item.quantity
-            }
-          }
+              decrement: item.quantity,
+            },
+          },
         });
       }
 
@@ -66,7 +66,27 @@ router.post('/sale', async (req, res) => {
 
     res.json(sale);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create sale' });
+    res.status(500).json({ error: "Failed to create sale" });
+  }
+});
+
+// Create a payment for a sale
+router.post("/payment", async (req, res) => {
+  const { saleId, amount, method } = req.body;
+
+  try {
+    const payment = await prisma.pOSPayment.create({
+      data: {
+        saleId,
+        amount,
+        method,
+        status: "completed",
+      },
+    });
+
+    res.json(payment);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to process payment" });
   }
 });
 

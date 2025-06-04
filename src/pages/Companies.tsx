@@ -34,7 +34,9 @@ const Companies = () => {
   const fetchCompanies = async () => {
     try {
       const response = await fetch(
-        `/api/companies${search ? `?search=${search}` : ""}`
+        `http://localhost:3002/api/companies${
+          search ? `?search=${search}` : ""
+        }`
       );
       const data = await response.json();
       setCompanies(data);
@@ -45,7 +47,9 @@ const Companies = () => {
 
   const handleCompanyClick = async (company: Company) => {
     try {
-      const response = await fetch(`/api/companies/${company.id}`);
+      const response = await fetch(
+        `http://localhost:3002/api/companies/${company.id}`
+      );
       const data = await response.json();
       setSelectedCompany(data);
     } catch (error) {
@@ -63,7 +67,7 @@ const Companies = () => {
     setIsUploading(true);
 
     try {
-      await fetch("/api/companies/import", {
+      await fetch("http://localhost:3002/api/companies/import", {
         method: "POST",
         body: formData,
       });

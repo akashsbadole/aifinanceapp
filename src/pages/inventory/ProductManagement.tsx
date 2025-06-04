@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -7,14 +7,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -22,22 +22,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from 'sonner';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
 
 const productSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  sku: z.string().min(1, 'SKU is required'),
+  name: z.string().min(1, "Name is required"),
+  sku: z.string().min(1, "SKU is required"),
   description: z.string().optional(),
-  categoryId: z.string().min(1, 'Category is required'),
-  purchasePrice: z.number().min(0, 'Purchase price must be positive'),
-  sellingPrice: z.number().min(0, 'Selling price must be positive'),
-  stockQuantity: z.number().min(0, 'Stock quantity must be positive'),
-  minimumStock: z.number().min(0, 'Minimum stock must be positive'),
+  categoryId: z.string().min(1, "Category is required"),
+  purchasePrice: z.number().min(0, "Purchase price must be positive"),
+  sellingPrice: z.number().min(0, "Selling price must be positive"),
+  stockQuantity: z.number().min(0, "Stock quantity must be positive"),
+  minimumStock: z.number().min(0, "Minimum stock must be positive"),
   location: z.string().optional(),
 });
 
@@ -69,15 +69,15 @@ export default function ProductManagement() {
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: '',
-      sku: '',
-      description: '',
-      categoryId: '',
+      name: "",
+      sku: "",
+      description: "",
+      categoryId: "",
       purchasePrice: 0,
       sellingPrice: 0,
       stockQuantity: 0,
       minimumStock: 0,
-      location: '',
+      location: "",
     },
   });
 
@@ -88,47 +88,54 @@ export default function ProductManagement() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory/products');
+      const response = await fetch(
+        "http://localhost:3002/api/inventory/products"
+      );
       const data = await response.json();
       setProducts(data);
     } catch (error) {
-      toast.error('Failed to fetch products');
+      toast.error("Failed to fetch products");
     }
   };
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory/categories');
+      const response = await fetch(
+        "http://localhost:3002/api/inventory/categories"
+      );
       const data = await response.json();
       setCategories(data);
     } catch (error) {
-      toast.error('Failed to fetch categories');
+      toast.error("Failed to fetch categories");
     }
   };
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     try {
       if (editingProduct) {
-        await fetch(`http://localhost:3001/api/inventory/products/${editingProduct.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
-        });
-        toast.success('Product updated successfully');
+        await fetch(
+          `http://localhost:3002/api/inventory/products/${editingProduct.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(values),
+          }
+        );
+        toast.success("Product updated successfully");
       } else {
-        await fetch('http://localhost:3001/api/inventory/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("http://localhost:3002/api/inventory/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
         });
-        toast.success('Product created successfully');
+        toast.success("Product created successfully");
       }
       setIsDialogOpen(false);
       form.reset();
       setEditingProduct(null);
       fetchProducts();
     } catch (error) {
-      toast.error('Failed to save product');
+      toast.error("Failed to save product");
     }
   };
 
@@ -149,15 +156,15 @@ export default function ProductManagement() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm("Are you sure you want to delete this product?")) return;
     try {
-      await fetch(`http://localhost:3001/api/inventory/products/${id}`, {
-        method: 'DELETE',
+      await fetch(`http://localhost:3002/api/inventory/products/${id}`, {
+        method: "DELETE",
       });
-      toast.success('Product deleted successfully');
+      toast.success("Product deleted successfully");
       fetchProducts();
     } catch (error) {
-      toast.error('Failed to delete product');
+      toast.error("Failed to delete product");
     }
   };
 
@@ -171,10 +178,15 @@ export default function ProductManagement() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingProduct ? 'Edit Product' : 'Add Product'}</DialogTitle>
+              <DialogTitle>
+                {editingProduct ? "Edit Product" : "Add Product"}
+              </DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="name"
@@ -234,7 +246,13 @@ export default function ProductManagement() {
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === "" ? 0 : parseFloat(value) || 0
+                            );
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -251,7 +269,13 @@ export default function ProductManagement() {
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === "" ? 0 : parseFloat(value) || 0
+                            );
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -268,7 +292,13 @@ export default function ProductManagement() {
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === "" ? 0 : parseInt(value) || 0
+                            );
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -285,7 +315,13 @@ export default function ProductManagement() {
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === "" ? 0 : parseInt(value) || 0
+                            );
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -293,7 +329,7 @@ export default function ProductManagement() {
                   )}
                 />
                 <Button type="submit" className="w-full">
-                  {editingProduct ? 'Update Product' : 'Add Product'}
+                  {editingProduct ? "Update Product" : "Add Product"}
                 </Button>
               </form>
             </Form>
@@ -348,4 +384,4 @@ export default function ProductManagement() {
       </Table>
     </div>
   );
-} 
+}

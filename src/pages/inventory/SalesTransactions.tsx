@@ -104,7 +104,7 @@ const SalesTransactions: React.FC = () => {
 
   const fetchSales = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/inventory/sales");
+      const response = await fetch("http://localhost:3002/api/inventory/sales");
       const data = await response.json();
       setSales(data);
       console.log("data ", data);
@@ -116,7 +116,7 @@ const SalesTransactions: React.FC = () => {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/inventory/products"
+        "http://localhost:3002/api/inventory/products"
       );
       const data = await response.json();
       setProducts(data);
@@ -184,7 +184,7 @@ const SalesTransactions: React.FC = () => {
       };
 
       const response = await fetch(
-        "http://localhost:3001/api/inventory/sales",
+        "http://localhost:3002/api/inventory/sales",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

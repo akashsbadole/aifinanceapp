@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -6,28 +6,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Search, Filter, Download } from 'lucide-react';
-import { Expense, expenseService } from '@/services/expenseService';
-import { Category, categoryService } from '@/services/categoryService';
-import { useToast } from '@/components/ui/use-toast';
-import ExpenseForm from './ExpenseForm';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Search, Filter, Download } from "lucide-react";
+import { Expense, expenseService } from "@/services/expenseService";
+import { Category, categoryService } from "@/services/categoryService";
+import { useToast } from "@/components/ui/use-toast";
+import ExpenseForm from "./ExpenseForm";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { format } from 'date-fns';
+} from "@/components/ui/select";
+import { format } from "date-fns";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -39,10 +39,10 @@ const ExpensesList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState({
-    search: '',
-    category: '',
-    startDate: '',
-    endDate: '',
+    search: "",
+    category: "",
+    startDate: "",
+    endDate: "",
   });
   const { toast } = useToast();
 
@@ -60,9 +60,9 @@ const ExpensesList: React.FC = () => {
       setCategories(data);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to fetch categories',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to fetch categories",
+        variant: "destructive",
       });
     }
   };
@@ -74,17 +74,21 @@ const ExpensesList: React.FC = () => {
         page: currentPage,
         limit: ITEMS_PER_PAGE,
         search: filters.search,
-        categoryId: filters.category === 'all' ? undefined : filters.category,
-        startDate: filters.startDate ? format(new Date(filters.startDate), 'yyyy-MM-dd') : undefined,
-        endDate: filters.endDate ? format(new Date(filters.endDate), 'yyyy-MM-dd') : undefined,
+        categoryId: filters.category === "all" ? undefined : filters.category,
+        startDate: filters.startDate
+          ? format(new Date(filters.startDate), "yyyy-MM-dd")
+          : undefined,
+        endDate: filters.endDate
+          ? format(new Date(filters.endDate), "yyyy-MM-dd")
+          : undefined,
       });
       setExpenses(response.expenses);
       setTotalPages(response.totalPages);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to fetch expenses',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to fetch expenses",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -95,15 +99,15 @@ const ExpensesList: React.FC = () => {
     try {
       await expenseService.deleteExpense(id);
       toast({
-        title: 'Success',
-        description: 'Expense deleted successfully',
+        title: "Success",
+        description: "Expense deleted successfully",
       });
       fetchExpenses();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to delete expense',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to delete expense",
+        variant: "destructive",
       });
     }
   };
@@ -116,45 +120,60 @@ const ExpensesList: React.FC = () => {
     try {
       const data = await expenseService.exportExpenses({
         search: filters.search,
-        categoryId: filters.category === 'all' ? undefined : filters.category,
-        startDate: filters.startDate ? format(new Date(filters.startDate), 'yyyy-MM-dd') : undefined,
-        endDate: filters.endDate ? format(new Date(filters.endDate), 'yyyy-MM-dd') : undefined,
+        categoryId: filters.category === "all" ? undefined : filters.category,
+        startDate: filters.startDate
+          ? format(new Date(filters.startDate), "yyyy-MM-dd")
+          : undefined,
+        endDate: filters.endDate
+          ? format(new Date(filters.endDate), "yyyy-MM-dd")
+          : undefined,
       });
-      
-      const csv = [
-        ['Date', 'Amount', 'Category', 'Vendor', 'Description', 'Payment Method', 'Status', 'Receipt'],
-        ...data.map(expense => [
-          format(new Date(expense.date), 'yyyy-MM-dd'),
-          expense.amount,
-          expense.category?.name || '',
-          expense.vendor || '',
-          expense.description || '',
-          expense.paymentMethod || '',
-          expense.status,
-          expense.hasReceipt ? 'Yes' : 'No',
-        ]),
-      ].map(row => row.join(',')).join('\n');
 
-      const blob = new Blob([csv], { type: 'text/csv' });
+      const csv = [
+        [
+          "Date",
+          "Amount",
+          "Category",
+          "Vendor",
+          "Description",
+          "Payment Method",
+          "Status",
+          "Receipt",
+        ],
+        ...data.map((expense) => [
+          format(new Date(expense.date), "yyyy-MM-dd"),
+          expense.amount,
+          expense.category?.name || "",
+          expense.vendor || "",
+          expense.description || "",
+          expense.paymentMethod || "",
+          expense.status,
+          expense.hasReceipt ? "Yes" : "No",
+        ]),
+      ]
+        .map((row) => row.join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv" });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `expenses-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      a.download = `expenses-${format(new Date(), "yyyy-MM-dd")}.csv`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to export expenses',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to export expenses",
+        variant: "destructive",
       });
     }
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1);
   };
 
@@ -171,13 +190,13 @@ const ExpensesList: React.FC = () => {
             <Input
               placeholder="Search expenses..."
               value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
               className="pl-8"
             />
           </div>
           <Select
             value={filters.category}
-            onValueChange={(value) => handleFilterChange('category', value)}
+            onValueChange={(value) => handleFilterChange("category", value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select category" />
@@ -194,12 +213,12 @@ const ExpensesList: React.FC = () => {
           <Input
             type="date"
             value={filters.startDate}
-            onChange={(e) => handleFilterChange('startDate', e.target.value)}
+            onChange={(e) => handleFilterChange("startDate", e.target.value)}
           />
           <Input
             type="date"
             value={filters.endDate}
-            onChange={(e) => handleFilterChange('endDate', e.target.value)}
+            onChange={(e) => handleFilterChange("endDate", e.target.value)}
           />
         </div>
         <div className="flex gap-2">
@@ -211,7 +230,8 @@ const ExpensesList: React.FC = () => {
         </div>
       </div>
 
-      <div className="rounded-md border">
+      {/* Desktop Table */}
+      <div className="hidden lg:block rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -229,22 +249,28 @@ const ExpensesList: React.FC = () => {
           <TableBody>
             {expenses.map((expense) => (
               <TableRow key={expense.id}>
-                <TableCell>{format(new Date(expense.date), 'yyyy-MM-dd')}</TableCell>
-                <TableCell>${expense.amount.toFixed(2)}</TableCell>
+                <TableCell>
+                  {format(new Date(expense.date), "yyyy-MM-dd")}
+                </TableCell>
+                <TableCell>₹{expense.amount.toFixed(2)}</TableCell>
                 <TableCell>{expense.category?.name}</TableCell>
                 <TableCell>{expense.vendor}</TableCell>
                 <TableCell>{expense.description}</TableCell>
                 <TableCell>{expense.paymentMethod}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    expense.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    expense.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      expense.status === "approved"
+                        ? "bg-green-100 text-green-800"
+                        : expense.status === "rejected"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
                     {expense.status}
                   </span>
                 </TableCell>
-                <TableCell>{expense.hasReceipt ? 'Yes' : 'No'}</TableCell>
+                <TableCell>{expense.hasReceipt ? "Yes" : "No"}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -271,17 +297,93 @@ const ExpensesList: React.FC = () => {
         </Table>
       </div>
 
+      {/* Mobile Cards */}
+      <div className="lg:hidden space-y-4">
+        {expenses.map((expense) => (
+          <div key={expense.id} className="border rounded-lg p-4 space-y-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="font-medium">₹{expense.amount.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(expense.date), "MMM dd, yyyy")}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    expense.status === "approved"
+                      ? "bg-green-100 text-green-800"
+                      : expense.status === "rejected"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-yellow-100 text-yellow-800"
+                  }`}
+                >
+                  {expense.status}
+                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleEdit(expense)}>
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-red-600"
+                      onClick={() => handleDelete(expense.id)}
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">Category:</span>{" "}
+                {expense.category?.name}
+              </p>
+              {expense.vendor && (
+                <p className="text-sm">
+                  <span className="font-medium">Vendor:</span> {expense.vendor}
+                </p>
+              )}
+              {expense.description && (
+                <p className="text-sm">
+                  <span className="font-medium">Description:</span>{" "}
+                  {expense.description}
+                </p>
+              )}
+              {expense.paymentMethod && (
+                <p className="text-sm">
+                  <span className="font-medium">Payment:</span>{" "}
+                  {expense.paymentMethod}
+                </p>
+              )}
+              <p className="text-sm">
+                <span className="font-medium">Receipt:</span>{" "}
+                {expense.hasReceipt ? "Yes" : "No"}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="flex justify-center gap-2">
         <Button
           variant="outline"
-          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
           disabled={currentPage === 1}
         >
           Previous
         </Button>
         <Button
           variant="outline"
-          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+          }
           disabled={currentPage === totalPages}
         >
           Next

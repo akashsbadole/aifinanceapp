@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -7,14 +7,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -22,17 +22,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from 'sonner';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
 
 const stockAdjustmentSchema = z.object({
-  productId: z.string().min(1, 'Product is required'),
-  type: z.enum(['addition', 'removal', 'damage']),
-  quantity: z.number().min(1, 'Quantity must be positive'),
+  productId: z.string().min(1, "Product is required"),
+  type: z.enum(["addition", "removal", "damage"]),
+  quantity: z.number().min(1, "Quantity must be positive"),
   reason: z.string().optional(),
 });
 
@@ -43,7 +43,7 @@ interface StockTransaction {
     name: string;
     sku: string;
   };
-  type: 'addition' | 'removal' | 'damage';
+  type: "addition" | "removal" | "damage";
   quantity: number;
   reason?: string;
   transactionDate: string;
@@ -64,10 +64,10 @@ export default function StockManagement() {
   const form = useForm<z.infer<typeof stockAdjustmentSchema>>({
     resolver: zodResolver(stockAdjustmentSchema),
     defaultValues: {
-      productId: '',
-      type: 'addition',
+      productId: "",
+      type: "addition",
       quantity: 1,
-      reason: '',
+      reason: "",
     },
   });
 
@@ -78,51 +78,55 @@ export default function StockManagement() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory/stock-transactions');
+      const response = await fetch(
+        "http://localhost:3002/api/inventory/stock-transactions"
+      );
       const data = await response.json();
       setTransactions(data);
     } catch (error) {
-      toast.error('Failed to fetch stock transactions');
+      toast.error("Failed to fetch stock transactions");
     }
   };
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory/products');
+      const response = await fetch(
+        "http://localhost:3002/api/inventory/products"
+      );
       const data = await response.json();
       setProducts(data);
     } catch (error) {
-      toast.error('Failed to fetch products');
+      toast.error("Failed to fetch products");
     }
   };
 
   const onSubmit = async (values: z.infer<typeof stockAdjustmentSchema>) => {
     try {
-      await fetch('http://localhost:3001/api/inventory/stock-adjustments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("http://localhost:3002/api/inventory/stock-adjustments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-      toast.success('Stock adjusted successfully');
+      toast.success("Stock adjusted successfully");
       setIsDialogOpen(false);
       form.reset();
       fetchTransactions();
       fetchProducts();
     } catch (error) {
-      toast.error('Failed to adjust stock');
+      toast.error("Failed to adjust stock");
     }
   };
 
   const getTransactionTypeColor = (type: string) => {
     switch (type) {
-      case 'addition':
-        return 'text-green-600';
-      case 'removal':
-        return 'text-red-600';
-      case 'damage':
-        return 'text-orange-600';
+      case "addition":
+        return "text-green-600";
+      case "removal":
+        return "text-red-600";
+      case "damage":
+        return "text-orange-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
@@ -139,7 +143,10 @@ export default function StockManagement() {
               <DialogTitle>Adjust Stock</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="productId"
@@ -154,7 +161,8 @@ export default function StockManagement() {
                           <option value="">Select a product</option>
                           {products.map((product) => (
                             <option key={product.id} value={product.id}>
-                              {product.name} (SKU: {product.sku}) - Current Stock: {product.stockQuantity}
+                              {product.name} (SKU: {product.sku}) - Current
+                              Stock: {product.stockQuantity}
                             </option>
                           ))}
                         </select>
@@ -193,7 +201,13 @@ export default function StockManagement() {
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === "" ? 1 : parseInt(value) || 1
+                            );
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -224,17 +238,16 @@ export default function StockManagement() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {products.map((product) => (
-          <div
-            key={product.id}
-            className="p-4 border rounded-lg shadow-sm"
-          >
+          <div key={product.id} className="p-4 border rounded-lg shadow-sm">
             <h3 className="font-semibold">{product.name}</h3>
             <p className="text-sm text-gray-500">SKU: {product.sku}</p>
-            <p className={`text-lg font-bold ${
-              product.stockQuantity <= product.minimumStock
-                ? 'text-red-600'
-                : 'text-green-600'
-            }`}>
+            <p
+              className={`text-lg font-bold ${
+                product.stockQuantity <= product.minimumStock
+                  ? "text-red-600"
+                  : "text-green-600"
+              }`}
+            >
               Stock: {product.stockQuantity}
             </p>
             <p className="text-sm text-gray-500">
@@ -264,14 +277,15 @@ export default function StockManagement() {
                 {transaction.product.name} (SKU: {transaction.product.sku})
               </TableCell>
               <TableCell className={getTransactionTypeColor(transaction.type)}>
-                {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                {transaction.type.charAt(0).toUpperCase() +
+                  transaction.type.slice(1)}
               </TableCell>
               <TableCell>{transaction.quantity}</TableCell>
-              <TableCell>{transaction.reason || '-'}</TableCell>
+              <TableCell>{transaction.reason || "-"}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
   );
-} 
+}

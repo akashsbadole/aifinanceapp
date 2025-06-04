@@ -122,3 +122,93 @@ model StockData {
 
   @@index([date])
 }
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique
+  clientName    String
+  clientEmail   String?
+  clientAddress String?
+  date          DateTime      @default(now())
+  dueDate       DateTime
+  subtotal      Float
+  taxRate       Float         @default(18)
+  taxAmount     Float
+  discount      Float         @default(0)
+  total         Float
+  status        String        @default("draft") // 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+  notes         String?
+  terms         String?
+  items         InvoiceItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model InvoiceItem {
+  id          String  @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int
+  rate        Float
+  amount      Float
+}
+
+model BusinessProfile {
+  id              String   @id @default(uuid())
+  companyName     String
+  companyAddress  String?
+  gstin           String?
+  phone           String?
+  email           String?
+  website         String?
+  logo            String?
+  bankName        String?
+  accountNumber   String?
+  ifscCode        String?
+  upiId           String?
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model QRCode {
+  id        String   @id @default(uuid())
+  name      String
+  type      String // 'text' | 'url' | 'wifi' | 'contact' | 'payment' | 'location'
+  data      String // JSON string containing the QR code data
+  qrCodeUrl String? // Base64 encoded QR code image
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Calculator {
+  id           String   @id @default(uuid())
+  type         String // 'gst' | 'emi' | 'sip' | 'fd' | 'compound'
+  name         String
+  inputs       String // JSON string containing calculator inputs
+  results      String // JSON string containing calculation results
+  isFavorite   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  name        String
+  type        String // 'expense' | 'sales' | 'inventory' | 'financial'
+  filters     String // JSON string containing report filters
+  data        String // JSON string containing report data
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Settings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  category  String // 'general' | 'appearance' | 'notifications' | 'security'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

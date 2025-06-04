@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { inventoryService } from '../services/inventoryService';
+import { Request, Response } from "express";
+import { inventoryService } from "../services/inventoryService";
 
 export const inventoryController = {
   // Product operations
@@ -8,7 +8,7 @@ export const inventoryController = {
       const products = await inventoryService.getAllProducts();
       res.json(products);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch products' });
+      res.status(500).json({ error: "Failed to fetch products" });
     }
   },
 
@@ -16,32 +16,40 @@ export const inventoryController = {
     try {
       const product = await inventoryService.getProductById(req.params.id);
       if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
+        return res.status(404).json({ error: "Product not found" });
       }
       res.json(product);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch product' });
+      res.status(500).json({ error: "Failed to fetch product" });
     }
   },
 
   async createProduct(req: Request, res: Response) {
     try {
+      console.log("Creating product with data:", req.body);
       const product = await inventoryService.createProduct(req.body);
       res.status(201).json(product);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to create product' });
+      const err = error as Error;
+      console.error("Error in createProduct:", err.message, err.stack);
+      res
+        .status(500)
+        .json({ error: "Failed to create product", details: err.message });
     }
   },
 
   async updateProduct(req: Request, res: Response) {
     try {
-      const product = await inventoryService.updateProduct(req.params.id, req.body);
+      const product = await inventoryService.updateProduct(
+        req.params.id,
+        req.body
+      );
       if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
+        return res.status(404).json({ error: "Product not found" });
       }
       res.json(product);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to update product' });
+      res.status(500).json({ error: "Failed to update product" });
     }
   },
 
@@ -50,7 +58,7 @@ export const inventoryController = {
       await inventoryService.deleteProduct(req.params.id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Failed to delete product' });
+      res.status(500).json({ error: "Failed to delete product" });
     }
   },
 
@@ -60,16 +68,18 @@ export const inventoryController = {
       const transactions = await inventoryService.getAllStockTransactions();
       res.json(transactions);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch stock transactions' });
+      res.status(500).json({ error: "Failed to fetch stock transactions" });
     }
   },
 
   async getProductTransactions(req: Request, res: Response) {
     try {
-      const transactions = await inventoryService.getProductTransactions(req.params.productId);
+      const transactions = await inventoryService.getProductTransactions(
+        req.params.productId
+      );
       res.json(transactions);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch product transactions' });
+      res.status(500).json({ error: "Failed to fetch product transactions" });
     }
   },
 
@@ -78,7 +88,7 @@ export const inventoryController = {
       const transaction = await inventoryService.adjustStock(req.body);
       res.status(201).json(transaction);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to adjust stock' });
+      res.status(500).json({ error: "Failed to adjust stock" });
     }
   },
 
@@ -88,7 +98,7 @@ export const inventoryController = {
       const sales = await inventoryService.getAllSales();
       res.json(sales);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch sales' });
+      res.status(500).json({ error: "Failed to fetch sales" });
     }
   },
 
@@ -96,11 +106,11 @@ export const inventoryController = {
     try {
       const sale = await inventoryService.getSaleById(req.params.id);
       if (!sale) {
-        return res.status(404).json({ error: 'Sale not found' });
+        return res.status(404).json({ error: "Sale not found" });
       }
       res.json(sale);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch sale' });
+      res.status(500).json({ error: "Failed to fetch sale" });
     }
   },
 
@@ -111,7 +121,9 @@ export const inventoryController = {
     } catch (error) {
       const err = error as Error;
       console.error("Error in createSale:", err.message, err.stack); // Log error details
-      res.status(500).json({ error: 'Failed to create sale', details: err.message }); // Include error details in response
+      res
+        .status(500)
+        .json({ error: "Failed to create sale", details: err.message }); // Include error details in response
     }
   },
 
@@ -121,7 +133,7 @@ export const inventoryController = {
       const categories = await inventoryService.getAllCategories();
       res.json(categories);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch categories' });
+      res.status(500).json({ error: "Failed to fetch categories" });
     }
   },
 
@@ -130,19 +142,22 @@ export const inventoryController = {
       const category = await inventoryService.createCategory(req.body);
       res.status(201).json(category);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to create category' });
+      res.status(500).json({ error: "Failed to create category" });
     }
   },
 
   async updateCategory(req: Request, res: Response) {
     try {
-      const category = await inventoryService.updateCategory(req.params.id, req.body);
+      const category = await inventoryService.updateCategory(
+        req.params.id,
+        req.body
+      );
       if (!category) {
-        return res.status(404).json({ error: 'Category not found' });
+        return res.status(404).json({ error: "Category not found" });
       }
       res.json(category);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to update category' });
+      res.status(500).json({ error: "Failed to update category" });
     }
   },
 
@@ -151,7 +166,7 @@ export const inventoryController = {
       await inventoryService.deleteCategory(req.params.id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Failed to delete category' });
+      res.status(500).json({ error: "Failed to delete category" });
     }
   },
 };

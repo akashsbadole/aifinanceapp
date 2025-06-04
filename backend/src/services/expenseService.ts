@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -48,8 +48,8 @@ export const expenseService = {
         search
           ? {
               OR: [
-                { description: { contains: search, mode: 'insensitive' } },
-                { vendor: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: "insensitive" } },
+                { vendor: { contains: search, mode: "insensitive" } },
               ],
             }
           : {},
@@ -63,7 +63,7 @@ export const expenseService = {
         include: {
           category: true,
         },
-        orderBy: { date: 'desc' },
+        orderBy: { date: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -96,16 +96,19 @@ export const expenseService = {
     });
   },
 
-  async updateExpense(id: string, data: {
-    amount?: number;
-    categoryId?: string;
-    date?: Date;
-    vendor?: string;
-    description?: string;
-    paymentMethod?: string;
-    hasReceipt?: boolean;
-    status?: string;
-  }) {
+  async updateExpense(
+    id: string,
+    data: {
+      amount?: number;
+      categoryId?: string;
+      date?: Date;
+      vendor?: string;
+      description?: string;
+      paymentMethod?: string;
+      hasReceipt?: boolean;
+      status?: string;
+    }
+  ) {
     return await prisma.expense.update({
       where: { id },
       data,
@@ -136,46 +139,47 @@ export const expenseService = {
       ],
     };
 
-    const [totalAmount, categoryBreakdown, monthlyTrend] = await Promise.all([
-      // Total amount
-      prisma.expense.aggregate({
-        where,
-        _sum: { amount: true },
-      }),
+    const [totalAmount, categoryBreakdown, paymentMethodBreakdown] =
+      await Promise.all([
+        // Total amount
+        prisma.expense.aggregate({
+          where,
+          _sum: { amount: true },
+        }),
 
-      // Category breakdown
-      prisma.expense.groupBy({
-        by: ['categoryId'],
-        where,
-        _sum: { amount: true },
-        _count: true,
-      }),
+        // Category breakdown
+        prisma.expense.groupBy({
+          by: ["categoryId"],
+          where,
+          _sum: { amount: true },
+          _count: true,
+        }),
 
-      // Monthly trend
-      prisma.expense.groupBy({
-        by: ['date'],
-        where,
-        _sum: { amount: true },
-        _count: true,
-        orderBy: { date: 'asc' },
-      }),
-    ]);
+        // Payment method breakdown
+        prisma.expense.groupBy({
+          by: ["paymentMethod"],
+          where,
+          _sum: { amount: true },
+          _count: true,
+        }),
+      ]);
 
-    // Get category names for the breakdown
-    const categoryIds = categoryBreakdown.map((cb: CategoryBreakdown) => cb.categoryId);
-    const categories = await prisma.category.findMany({
-      where: { id: { in: categoryIds } },
-    });
+    // Format category breakdown
+    const byCategory = categoryBreakdown.map((cb: CategoryBreakdown) => ({
+      categoryId: cb.categoryId,
+      total: cb._sum.amount || 0,
+    }));
 
-    const categoryBreakdownWithNames = categoryBreakdown.map((cb: CategoryBreakdown) => ({
-      ...cb,
-      categoryName: categories.find((c: { id: string; name: string }) => c.id === cb.categoryId)?.name || 'Unknown',
+    // Format payment method breakdown
+    const byPaymentMethod = paymentMethodBreakdown.map((pm: any) => ({
+      method: pm.paymentMethod || "Unknown",
+      total: pm._sum.amount || 0,
     }));
 
     return {
-      totalAmount: totalAmount._sum.amount || 0,
-      categoryBreakdown: categoryBreakdownWithNames,
-      monthlyTrend,
+      total: totalAmount._sum.amount || 0,
+      byCategory,
+      byPaymentMethod,
     };
   },
 
@@ -199,7 +203,7 @@ export const expenseService = {
       include: {
         category: true,
       },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
     });
   },
-}; 
+};

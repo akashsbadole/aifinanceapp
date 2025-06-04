@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3001/api';
+const API_URL = "http://localhost:3002/api";
 
 export interface Category {
   id: string;
@@ -20,7 +20,7 @@ export interface Expense {
   description?: string;
   paymentMethod?: string;
   hasReceipt: boolean;
-  status: 'approved' | 'pending' | 'rejected';
+  status: "approved" | "pending" | "rejected";
   createdAt: string;
   updatedAt: string;
 }
@@ -48,80 +48,87 @@ export const expenseService = {
     totalPages: number;
   }> {
     const queryParams = new URLSearchParams();
-    if (filters.startDate) queryParams.append('startDate', filters.startDate);
-    if (filters.endDate) queryParams.append('endDate', filters.endDate);
-    if (filters.categoryId) queryParams.append('categoryId', filters.categoryId);
-    if (filters.search) queryParams.append('search', filters.search);
-    if (filters.page) queryParams.append('page', filters.page.toString());
-    if (filters.limit) queryParams.append('limit', filters.limit.toString());
+    if (filters.startDate) queryParams.append("startDate", filters.startDate);
+    if (filters.endDate) queryParams.append("endDate", filters.endDate);
+    if (filters.categoryId)
+      queryParams.append("categoryId", filters.categoryId);
+    if (filters.search) queryParams.append("search", filters.search);
+    if (filters.page) queryParams.append("page", filters.page.toString());
+    if (filters.limit) queryParams.append("limit", filters.limit.toString());
 
     const response = await fetch(`${API_URL}/expenses?${queryParams}`);
     if (!response.ok) {
-      throw new Error('Failed to fetch expenses');
+      throw new Error("Failed to fetch expenses");
     }
     return response.json();
   },
 
-  async createExpense(expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt' | 'category'>): Promise<Expense> {
+  async createExpense(
+    expense: Omit<Expense, "id" | "createdAt" | "updatedAt" | "category">
+  ): Promise<Expense> {
     const response = await fetch(`${API_URL}/expenses`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(expense),
     });
     if (!response.ok) {
-      throw new Error('Failed to create expense');
+      throw new Error("Failed to create expense");
     }
     return response.json();
   },
 
   async updateExpense(id: string, expense: Partial<Expense>): Promise<Expense> {
     const response = await fetch(`${API_URL}/expenses/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(expense),
     });
     if (!response.ok) {
-      throw new Error('Failed to update expense');
+      throw new Error("Failed to update expense");
     }
     return response.json();
   },
 
   async deleteExpense(id: string): Promise<void> {
     const response = await fetch(`${API_URL}/expenses/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
     if (!response.ok) {
-      throw new Error('Failed to delete expense');
+      throw new Error("Failed to delete expense");
     }
   },
 
-  async getExpenseSummary(filters: ExpenseFilters = {}): Promise<ExpenseSummary> {
+  async getExpenseSummary(
+    filters: ExpenseFilters = {}
+  ): Promise<ExpenseSummary> {
     const queryParams = new URLSearchParams();
-    if (filters.startDate) queryParams.append('startDate', filters.startDate);
-    if (filters.endDate) queryParams.append('endDate', filters.endDate);
-    if (filters.categoryId) queryParams.append('categoryId', filters.categoryId);
+    if (filters.startDate) queryParams.append("startDate", filters.startDate);
+    if (filters.endDate) queryParams.append("endDate", filters.endDate);
+    if (filters.categoryId)
+      queryParams.append("categoryId", filters.categoryId);
 
-    const response = await fetch(`${API_URL}/reports/summary?${queryParams}`);
+    const response = await fetch(`${API_URL}/expenses/summary?${queryParams}`);
     if (!response.ok) {
-      throw new Error('Failed to fetch expense summary');
+      throw new Error("Failed to fetch expense summary");
     }
     return response.json();
   },
 
   async exportExpenses(filters: ExpenseFilters = {}): Promise<Expense[]> {
     const queryParams = new URLSearchParams();
-    if (filters.startDate) queryParams.append('startDate', filters.startDate);
-    if (filters.endDate) queryParams.append('endDate', filters.endDate);
-    if (filters.categoryId) queryParams.append('categoryId', filters.categoryId);
+    if (filters.startDate) queryParams.append("startDate", filters.startDate);
+    if (filters.endDate) queryParams.append("endDate", filters.endDate);
+    if (filters.categoryId)
+      queryParams.append("categoryId", filters.categoryId);
 
-    const response = await fetch(`${API_URL}/reports/export?${queryParams}`);
+    const response = await fetch(`${API_URL}/expenses/export?${queryParams}`);
     if (!response.ok) {
-      throw new Error('Failed to export expenses');
+      throw new Error("Failed to export expenses");
     }
     return response.json();
   },
-}; 
+};
