@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import MetricCard from "@/components/dashboard/MetricCard";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import FinancialOverview from "@/components/dashboard/FinancialOverview";
@@ -13,10 +13,8 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ExpensesList from "@/components/expenses/ExpensesList";
 import ExpenseReports from "@/components/expenses/ExpenseReports";
-import CategoriesList from "@/components/categories/CategoriesList";
 import { expenseService } from "@/services/expenseService";
 import { categoryService } from "@/services/categoryService";
 import { useToast } from "@/components/ui/use-toast";
@@ -119,154 +117,198 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Button size="sm" variant="outline" className="rounded-full">
-            <Plus size={14} className="mr-1" />
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Dashboard
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Welcome back! Here's your business overview.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full sm:w-auto bg-white border-gray-200 hover:bg-gray-50"
+          >
+            <Plus size={14} className="mr-2" />
             New Invoice
           </Button>
-          <Button size="sm" className="rounded-full">
-            <Plus size={14} className="mr-1" />
+          <Button
+            size="sm"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus size={14} className="mr-2" />
             New Expense
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <MetricCard
           title="Total Revenue"
           value="₹5,84,000"
           delta={{ value: 12.5, isPositive: true }}
-          icon={<ArrowUp size={18} />}
+          icon={<ArrowUp size={16} />}
+          className="bg-white border border-gray-200 shadow-sm hover:shadow-md"
         />
         <MetricCard
           title="Total Expenses"
           value="₹2,65,000"
           delta={{ value: 5.3, isPositive: false }}
-          icon={<ArrowDown size={18} />}
+          icon={<ArrowDown size={16} />}
+          className="bg-white border border-gray-200 shadow-sm hover:shadow-md"
         />
         <MetricCard
           title="Outstanding Invoices"
           value="₹1,35,000"
-          icon={<FileText size={18} />}
+          icon={<FileText size={16} />}
+          className="bg-white border border-gray-200 shadow-sm hover:shadow-md"
         />
         <MetricCard
           title="GST Payable"
           value="₹32,400"
-          icon={<BarChart4 size={18} />}
+          icon={<BarChart4 size={16} />}
+          className="bg-white border border-gray-200 shadow-sm hover:shadow-md"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        <div className="lg:col-span-2">
-          <FinancialOverview data={financialData} />
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <FinancialOverview data={financialData} />
+          </div>
         </div>
-        <div>
-          <RecentTransactions transactions={transactions} />
-        </div>
-      </div>
-
-      <div className="glass-card p-4 lg:p-6">
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-          <Button
-            variant="outline"
-            className="h-auto py-4 lg:py-6 flex flex-col items-center premium-transition"
-          >
-            <FileText className="h-5 w-5 lg:h-6 lg:w-6 mb-2 text-primary" />
-            <span className="text-xs lg:text-sm">Create Invoice</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-auto py-4 lg:py-6 flex flex-col items-center premium-transition"
-          >
-            <CreditCard className="h-5 w-5 lg:h-6 lg:w-6 mb-2 text-primary" />
-            <span className="text-xs lg:text-sm">Record Expense</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-auto py-4 lg:py-6 flex flex-col items-center premium-transition"
-          >
-            <ShoppingCart className="h-5 w-5 lg:h-6 lg:w-6 mb-2 text-primary" />
-            <span className="text-xs lg:text-sm">Create PO</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-auto py-4 lg:py-6 flex flex-col items-center premium-transition"
-          >
-            <BarChart4 className="h-5 w-5 lg:h-6 lg:w-6 mb-2 text-primary" />
-            <span className="text-xs lg:text-sm">View Reports</span>
-          </Button>
+        <div className="xl:col-span-1">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <RecentTransactions transactions={transactions} />
+          </div>
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Button
+            variant="outline"
+            className="h-auto py-6 flex flex-col items-center gap-3 border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all"
+          >
+            <FileText className="h-6 w-6 text-blue-600" />
+            <span className="text-sm font-medium text-gray-700">
+              Create Invoice
+            </span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-auto py-6 flex flex-col items-center gap-3 border-gray-200 hover:bg-green-50 hover:border-green-300 transition-all"
+          >
+            <CreditCard className="h-6 w-6 text-green-600" />
+            <span className="text-sm font-medium text-gray-700">
+              Record Expense
+            </span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-auto py-6 flex flex-col items-center gap-3 border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all"
+          >
+            <ShoppingCart className="h-6 w-6 text-purple-600" />
+            <span className="text-sm font-medium text-gray-700">Create PO</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-auto py-6 flex flex-col items-center gap-3 border-gray-200 hover:bg-orange-50 hover:border-orange-300 transition-all"
+          >
+            <BarChart4 className="h-6 w-6 text-orange-600" />
+            <span className="text-sm font-medium text-gray-700">
+              View Reports
+            </span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Expense Statistics */}
       <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+          <Card className="bg-white border border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-gray-600">
                 Total Expenses
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900">
                 ₹{stats.totalExpenses.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500 mt-1">
                 Total expenses this month
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white border border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-gray-600">
                 Pending Expenses
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900">
                 {stats.pendingExpenses}
               </div>
-              <p className="text-xs text-muted-foreground">Awaiting approval</p>
+              <p className="text-xs text-gray-500 mt-1">Awaiting approval</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white border border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Categories
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900">
                 {stats.categories}
               </div>
-              <p className="text-xs text-muted-foreground">Active categories</p>
+              <p className="text-xs text-gray-500 mt-1">Active categories</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white border border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Budget Used
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900">
                 {stats.budgetUsed}%
               </div>
-              <p className="text-xs text-muted-foreground">Of monthly budget</p>
+              <p className="text-xs text-gray-500 mt-1">Of monthly budget</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-7">
-          <Card className="lg:col-span-4">
+        {/* Expense Details */}
+        <div className="grid grid-cols-1 xl:grid-cols-7 gap-6">
+          <Card className="xl:col-span-4 bg-white border border-gray-200 shadow-sm">
             <CardHeader>
-              <CardTitle>Recent Expenses</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                Recent Expenses
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ExpensesList />
             </CardContent>
           </Card>
-          <Card className="lg:col-span-3">
+          <Card className="xl:col-span-3 bg-white border border-gray-200 shadow-sm">
             <CardHeader>
-              <CardTitle>Expense Summary</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                Expense Summary
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ExpenseReports />

@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -8,34 +8,34 @@ export const invoiceController = {
   async getAllInvoices(req: Request, res: Response) {
     try {
       const { status, search, page = 1, limit = 10 } = req.query;
-      
+
       const where: any = {};
-      
-      if (status && status !== 'all') {
+
+      if (status && status !== "all") {
         where.status = status;
       }
-      
+
       if (search) {
         where.OR = [
           { invoiceNumber: { contains: search as string } },
           { clientName: { contains: search as string } },
-          { clientEmail: { contains: search as string } }
+          { clientEmail: { contains: search as string } },
         ];
       }
 
       const skip = (Number(page) - 1) * Number(limit);
-      
+
       const [invoices, total] = await Promise.all([
         prisma.invoice.findMany({
           where,
           include: {
-            items: true
+            items: true,
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           skip,
-          take: Number(limit)
+          take: Number(limit),
         }),
-        prisma.invoice.count({ where })
+        prisma.invoice.count({ where }),
       ]);
 
       res.json({
@@ -44,12 +44,12 @@ export const invoiceController = {
           page: Number(page),
           limit: Number(limit),
           total,
-          pages: Math.ceil(total / Number(limit))
-        }
+          pages: Math.ceil(total / Number(limit)),
+        },
       });
     } catch (error) {
-      console.error('Error fetching invoices:', error);
-      res.status(500).json({ error: 'Failed to fetch invoices' });
+      console.error("Error fetching invoices:", error);
+      res.status(500).json({ error: "Failed to fetch invoices" });
     }
   },
 
@@ -57,30 +57,52 @@ export const invoiceController = {
   async getInvoiceById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      
+
       const invoice = await prisma.invoice.findUnique({
         where: { id },
         include: {
-          items: true
-        }
+          items: true,
+        },
       });
 
       if (!invoice) {
-        return res.status(404).json({ error: 'Invoice not found' });
+        return res.status(404).json({ error: "Invoice not found" });
       }
 
       res.json(invoice);
     } catch (error) {
-      console.error('Error fetching invoice:', error);
-      res.status(500).json({ error: 'Failed to fetch invoice' });
+      console.error("Error fetching invoice:", error);
+      res.status(500).json({ error: "Failed to fetch invoice" });
     }
+  },
+
+  // Generate unique invoice number
+  async generateInvoiceNumber(): Promise<string> {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
+
+    // Get the count of invoices for this month
+    const startOfMonth = new Date(currentYear, new Date().getMonth(), 1);
+    const endOfMonth = new Date(currentYear, new Date().getMonth() + 1, 0);
+
+    const invoiceCount = await prisma.invoice.count({
+      where: {
+        createdAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+    });
+
+    const sequenceNumber = String(invoiceCount + 1).padStart(4, "0");
+    return `INV-${currentYear}${currentMonth}-${sequenceNumber}`;
   },
 
   // Create new invoice
   async createInvoice(req: Request, res: Response) {
     try {
       const {
-        invoiceNumber,
+        invoiceNumber: providedInvoiceNumber,
         clientName,
         clientEmail,
         clientAddress,
@@ -89,11 +111,31 @@ export const invoiceController = {
         taxRate = 18,
         discount = 0,
         notes,
-        terms
+        terms,
       } = req.body;
 
+      // Generate unique invoice number if not provided or if provided one already exists
+      let invoiceNumber = providedInvoiceNumber;
+
+      if (!invoiceNumber) {
+        invoiceNumber = await invoiceController.generateInvoiceNumber();
+      } else {
+        // Check if the provided invoice number already exists
+        const existingInvoice = await prisma.invoice.findUnique({
+          where: { invoiceNumber },
+        });
+
+        if (existingInvoice) {
+          // Generate a new unique number
+          invoiceNumber = await invoiceController.generateInvoiceNumber();
+        }
+      }
+
       // Calculate totals
-      const subtotal = items.reduce((sum: number, item: any) => sum + item.amount, 0);
+      const subtotal = items.reduce(
+        (sum: number, item: any) => sum + item.amount,
+        0
+      );
       const discountAmount = (subtotal * discount) / 100;
       const taxableAmount = subtotal - discountAmount;
       const taxAmount = (taxableAmount * taxRate) / 100;
@@ -118,19 +160,19 @@ export const invoiceController = {
               description: item.description,
               quantity: item.quantity,
               rate: item.rate,
-              amount: item.amount
-            }))
-          }
+              amount: item.amount,
+            })),
+          },
         },
         include: {
-          items: true
-        }
+          items: true,
+        },
       });
 
       res.status(201).json(invoice);
     } catch (error) {
-      console.error('Error creating invoice:', error);
-      res.status(500).json({ error: 'Failed to create invoice' });
+      console.error("Error creating invoice:", error);
+      res.status(500).json({ error: "Failed to create invoice" });
     }
   },
 
@@ -148,11 +190,14 @@ export const invoiceController = {
         discount,
         notes,
         terms,
-        status
+        status,
       } = req.body;
 
       // Calculate totals
-      const subtotal = items.reduce((sum: number, item: any) => sum + item.amount, 0);
+      const subtotal = items.reduce(
+        (sum: number, item: any) => sum + item.amount,
+        0
+      );
       const discountAmount = (subtotal * discount) / 100;
       const taxableAmount = subtotal - discountAmount;
       const taxAmount = (taxableAmount * taxRate) / 100;
@@ -160,7 +205,7 @@ export const invoiceController = {
 
       // Delete existing items and create new ones
       await prisma.invoiceItem.deleteMany({
-        where: { invoiceId: id }
+        where: { invoiceId: id },
       });
 
       const invoice = await prisma.invoice.update({
@@ -183,19 +228,19 @@ export const invoiceController = {
               description: item.description,
               quantity: item.quantity,
               rate: item.rate,
-              amount: item.amount
-            }))
-          }
+              amount: item.amount,
+            })),
+          },
         },
         include: {
-          items: true
-        }
+          items: true,
+        },
       });
 
       res.json(invoice);
     } catch (error) {
-      console.error('Error updating invoice:', error);
-      res.status(500).json({ error: 'Failed to update invoice' });
+      console.error("Error updating invoice:", error);
+      res.status(500).json({ error: "Failed to update invoice" });
     }
   },
 
@@ -205,13 +250,13 @@ export const invoiceController = {
       const { id } = req.params;
 
       await prisma.invoice.delete({
-        where: { id }
+        where: { id },
       });
 
       res.status(204).send();
     } catch (error) {
-      console.error('Error deleting invoice:', error);
-      res.status(500).json({ error: 'Failed to delete invoice' });
+      console.error("Error deleting invoice:", error);
+      res.status(500).json({ error: "Failed to delete invoice" });
     }
   },
 
@@ -224,17 +269,17 @@ export const invoiceController = {
         pendingInvoices,
         overdueInvoices,
         totalAmount,
-        paidAmount
+        paidAmount,
       ] = await Promise.all([
         prisma.invoice.count(),
-        prisma.invoice.count({ where: { status: 'paid' } }),
-        prisma.invoice.count({ where: { status: 'sent' } }),
-        prisma.invoice.count({ where: { status: 'overdue' } }),
+        prisma.invoice.count({ where: { status: "paid" } }),
+        prisma.invoice.count({ where: { status: "sent" } }),
+        prisma.invoice.count({ where: { status: "overdue" } }),
         prisma.invoice.aggregate({ _sum: { total: true } }),
-        prisma.invoice.aggregate({ 
-          where: { status: 'paid' },
-          _sum: { total: true } 
-        })
+        prisma.invoice.aggregate({
+          where: { status: "paid" },
+          _sum: { total: true },
+        }),
       ]);
 
       res.json({
@@ -244,11 +289,12 @@ export const invoiceController = {
         overdueInvoices,
         totalAmount: totalAmount._sum.total || 0,
         paidAmount: paidAmount._sum.total || 0,
-        pendingAmount: (totalAmount._sum.total || 0) - (paidAmount._sum.total || 0)
+        pendingAmount:
+          (totalAmount._sum.total || 0) - (paidAmount._sum.total || 0),
       });
     } catch (error) {
-      console.error('Error fetching invoice stats:', error);
-      res.status(500).json({ error: 'Failed to fetch invoice statistics' });
+      console.error("Error fetching invoice stats:", error);
+      res.status(500).json({ error: "Failed to fetch invoice statistics" });
     }
   },
 
@@ -261,13 +307,13 @@ export const invoiceController = {
       const invoice = await prisma.invoice.update({
         where: { id },
         data: { status },
-        include: { items: true }
+        include: { items: true },
       });
 
       res.json(invoice);
     } catch (error) {
-      console.error('Error updating invoice status:', error);
-      res.status(500).json({ error: 'Failed to update invoice status' });
+      console.error("Error updating invoice status:", error);
+      res.status(500).json({ error: "Failed to update invoice status" });
     }
-  }
+  },
 };

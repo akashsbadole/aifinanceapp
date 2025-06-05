@@ -182,23 +182,40 @@ const ExpensesList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-4">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-4 sm:space-y-6">
+      {/* Mobile-First Responsive Filters */}
+      <div className="space-y-4">
+        {/* Search and Actions Row */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search expenses..."
               value={filters.search}
               onChange={(e) => handleFilterChange("search", e.target.value)}
-              className="pl-8"
+              className="pl-10"
             />
           </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="flex-1 sm:flex-none"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+            <ExpenseForm onSuccess={fetchExpenses} />
+          </div>
+        </div>
+
+        {/* Filters Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Select
             value={filters.category}
             onValueChange={(value) => handleFilterChange("category", value)}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -212,89 +229,214 @@ const ExpensesList: React.FC = () => {
           </Select>
           <Input
             type="date"
+            placeholder="Start date"
             value={filters.startDate}
             onChange={(e) => handleFilterChange("startDate", e.target.value)}
           />
           <Input
             type="date"
+            placeholder="End date"
             value={filters.endDate}
             onChange={(e) => handleFilterChange("endDate", e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <ExpenseForm onSuccess={fetchExpenses} />
+      </div>
+
+      {/* Desktop Table (Large screens) */}
+      <div className="hidden xl:block rounded-md border bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold">Date</TableHead>
+                <TableHead className="font-semibold">Amount</TableHead>
+                <TableHead className="font-semibold">Category</TableHead>
+                <TableHead className="font-semibold">Vendor</TableHead>
+                <TableHead className="font-semibold">Description</TableHead>
+                <TableHead className="font-semibold">Payment Method</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Receipt</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {expenses.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={9}
+                    className="text-center py-8 text-gray-500"
+                  >
+                    No expenses found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                expenses.map((expense) => (
+                  <TableRow
+                    key={expense.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <TableCell className="font-medium">
+                      {format(new Date(expense.date), "MMM dd, yyyy")}
+                    </TableCell>
+                    <TableCell className="font-semibold">
+                      ₹{expense.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell>{expense.category?.name}</TableCell>
+                    <TableCell>{expense.vendor || "-"}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      {expense.description || "-"}
+                    </TableCell>
+                    <TableCell>{expense.paymentMethod || "-"}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          expense.status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : expense.status === "rejected"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {expense.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`text-sm ${
+                          expense.hasReceipt
+                            ? "text-green-600"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {expense.hasReceipt ? "Yes" : "No"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(expense)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => handleDelete(expense.id)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden lg:block rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Vendor</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Payment Method</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Receipt</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell>
-                  {format(new Date(expense.date), "yyyy-MM-dd")}
-                </TableCell>
-                <TableCell>₹{expense.amount.toFixed(2)}</TableCell>
-                <TableCell>{expense.category?.name}</TableCell>
-                <TableCell>{expense.vendor}</TableCell>
-                <TableCell>{expense.description}</TableCell>
-                <TableCell>{expense.paymentMethod}</TableCell>
-                <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      expense.status === "approved"
-                        ? "bg-green-100 text-green-800"
-                        : expense.status === "rejected"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {expense.status}
-                  </span>
-                </TableCell>
-                <TableCell>{expense.hasReceipt ? "Yes" : "No"}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEdit(expense)}>
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => handleDelete(expense.id)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+      {/* Tablet Table (Medium screens) */}
+      <div className="hidden lg:block xl:hidden rounded-md border bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold">Date</TableHead>
+                <TableHead className="font-semibold">Amount</TableHead>
+                <TableHead className="font-semibold">Category</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {expenses.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 text-gray-500"
+                  >
+                    No expenses found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                expenses.map((expense) => (
+                  <TableRow
+                    key={expense.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">
+                          {format(new Date(expense.date), "MMM dd")}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {format(new Date(expense.date), "yyyy")}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-semibold">
+                          ₹{expense.amount.toFixed(2)}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {expense.paymentMethod || "N/A"}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">
+                          {expense.category?.name}
+                        </div>
+                        <div className="text-sm text-gray-500 truncate max-w-[150px]">
+                          {expense.vendor || expense.description || "N/A"}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          expense.status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : expense.status === "rejected"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {expense.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(expense)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => handleDelete(expense.id)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Mobile Cards */}

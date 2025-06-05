@@ -9,37 +9,47 @@ import {
   Receipt,
   Users,
   Settings,
-  Utensils,
   Calculator,
-  FileCheck,
-  FileSpreadsheet,
   ShoppingCart,
-  DollarSign,
   QrCode,
+  Package,
+  TrendingUp,
+  Home,
+  Briefcase,
+  Wrench,
+  DollarSign,
+  ChevronRight,
+  FileCheck,
+  Utensils,
   Barcode,
   CreditCard as BusinessCard,
-  Package,
+  FileSpreadsheet,
   Boxes,
   Store,
-  TrendingUp,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
   className?: string;
   isOpen?: boolean;
+  isCollapsed?: boolean;
   onClose?: () => void;
+  onToggleCollapse?: () => void;
 }
 
 interface SidebarItemProps {
   icon: React.ReactNode;
   label: string;
   to: string;
+  isCollapsed?: boolean;
+  onClick?: () => void;
 }
 
-const SidebarItem: React.FC<SidebarItemProps & { onClick?: () => void }> = ({
+const SidebarItem: React.FC<SidebarItemProps> = ({
   icon,
   label,
   to,
+  isCollapsed,
   onClick,
 }) => {
   return (
@@ -48,229 +58,312 @@ const SidebarItem: React.FC<SidebarItemProps & { onClick?: () => void }> = ({
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          "flex items-center h-10 px-4 py-2 my-1 rounded-lg text-sm premium-transition group",
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative",
           isActive
-            ? "bg-primary text-primary-foreground font-medium"
-            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+          isCollapsed && "justify-center px-2"
         )
       }
     >
-      <span className="mr-3">{icon}</span>
-      <span>{label}</span>
+      <span className={cn("flex-shrink-0", isCollapsed ? "text-lg" : "")}>
+        {icon}
+      </span>
+      {!isCollapsed && <span className="truncate">{label}</span>}
+
+      {/* Tooltip for collapsed state */}
+      {isCollapsed && (
+        <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {label}
+        </div>
+      )}
     </NavLink>
   );
 };
 
-const Sidebar = ({ className, isOpen, onClose }: SidebarProps) => {
+interface SidebarSectionProps {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  isCollapsed?: boolean;
+}
+
+const SidebarSection: React.FC<SidebarSectionProps> = ({
+  title,
+  icon,
+  children,
+  isCollapsed,
+}) => {
+  const [isExpanded, setIsExpanded] = React.useState(true);
+
+  if (isCollapsed) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-center py-2">
+          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
+            {icon}
+          </div>
+        </div>
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <Button
+        variant="ghost"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full justify-between px-3 py-2 h-auto text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-transparent"
+      >
+        <div className="flex items-center gap-2">
+          {icon}
+          <span>{title}</span>
+        </div>
+        <ChevronRight
+          className={cn(
+            "h-3 w-3 transition-transform duration-200",
+            isExpanded && "rotate-90"
+          )}
+        />
+      </Button>
+      {isExpanded && <div className="space-y-1 pl-2">{children}</div>}
+    </div>
+  );
+};
+
+const Sidebar = ({
+  className,
+  isOpen,
+  isCollapsed,
+  onClose,
+  onToggleCollapse,
+}: SidebarProps) => {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 glass-effect border-r z-50",
-        "overflow-y-auto py-6 px-3 flex flex-col transition-transform duration-300",
+        "fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-50 transition-all duration-300",
+        "overflow-y-auto flex flex-col",
+        isCollapsed ? "w-16" : "w-64",
         "lg:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         className
       )}
     >
-      <div className="mb-6 px-4">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Main Menu
-        </h2>
+      {/* Logo/Brand */}
+      <div
+        className={cn(
+          "flex items-center gap-3 px-4 py-4 border-b border-gray-200",
+          isCollapsed && "justify-center px-2"
+        )}
+      >
+        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-sm">F</span>
+        </div>
+        {!isCollapsed && (
+          <span className="font-bold text-lg text-gray-900">Finance App</span>
+        )}
       </div>
 
-      <nav className="space-y-1 flex-1">
-        <SidebarItem
-          to="/dashboard"
-          icon={<LayoutDashboard size={18} />}
-          label="Dashboard"
-          onClick={onClose}
-        />
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-6">
+        {/* Main */}
+        <div className="space-y-1">
+          <SidebarItem
+            to="/dashboard"
+            icon={<Home size={18} />}
+            label="Dashboard"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+        </div>
 
         {/* Inventory Section */}
-        <div className="px-4 py-2">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Inventory
-          </h3>
-          <div className="space-y-1">
-            <SidebarItem
-              to="/inventory/products"
-              icon={<Boxes size={18} />}
-              label="Product Management"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/inventory/stock"
-              icon={<Store size={18} />}
-              label="Stock Management"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/inventory/sales"
-              icon={<ShoppingCart size={18} />}
-              label="Sales Transactions"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/pos"
-              icon={<ShoppingCart size={18} />}
-              label="POS"
-              onClick={onClose}
-            />
-          </div>
-        </div>
+        <SidebarSection
+          title="Inventory"
+          icon={<Package size={14} />}
+          isCollapsed={isCollapsed}
+        >
+          <SidebarItem
+            to="/inventory/products"
+            icon={<Package size={16} />}
+            label="Products"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/inventory/stock"
+            icon={<BarChart4 size={16} />}
+            label="Stock"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/inventory/sales"
+            icon={<ShoppingCart size={16} />}
+            label="Sales"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/pos"
+            icon={<ShoppingCart size={16} />}
+            label="POS"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+        </SidebarSection>
 
-        {/* Invoice Section */}
-        <div className="px-4 py-2">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Invoices
-          </h3>
-          <div className="space-y-1">
-            <SidebarItem
-              to="/invoices"
-              icon={<FileText size={18} />}
-              label="Invoices"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/invoice-generator"
-              icon={<FileText size={18} />}
-              label="Invoice Generator"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/proforma-invoice"
-              icon={<FileSpreadsheet size={18} />}
-              label="Proforma Invoice"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/purchase-order"
-              icon={<ShoppingCart size={18} />}
-              label="Purchase Order"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/cash-receipt"
-              icon={<DollarSign size={18} />}
-              label="Cash Receipt"
-              onClick={onClose}
-            />
-          </div>
-        </div>
+        {/* Invoices Section */}
+        <SidebarSection
+          title="Invoices"
+          icon={<FileText size={14} />}
+          isCollapsed={isCollapsed}
+        >
+          <SidebarItem
+            to="/invoices"
+            icon={<FileText size={16} />}
+            label="All Invoices"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/invoice-generator"
+            icon={<FileText size={16} />}
+            label="Create Invoice"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/proforma-invoice"
+            icon={<FileSpreadsheet size={16} />}
+            label="Proforma"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/purchase-order"
+            icon={<ShoppingCart size={16} />}
+            label="Purchase Order"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/cash-receipt"
+            icon={<DollarSign size={16} />}
+            label="Cash Receipt"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+        </SidebarSection>
 
         {/* Tools Section */}
-        <div className="px-4 py-2">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Tools
-          </h3>
-          <div className="space-y-1">
-            <SidebarItem
-              to="/qr-code-generator"
-              icon={<QrCode size={18} />}
-              label="QR Code Generator"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/estimate-quotation"
-              icon={<FileCheck size={18} />}
-              label="Estimate/Quotation"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/restaurant-bill"
-              icon={<Utensils size={18} />}
-              label="Restaurant Bill"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/barcode-generator"
-              icon={<Barcode size={18} />}
-              label="Barcode Generator"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/business-card-maker"
-              icon={<BusinessCard size={18} />}
-              label="Business Card Maker"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/calculators"
-              icon={<Calculator size={18} />}
-              label="Calculators"
-              onClick={onClose}
-            />
-          </div>
-        </div>
+        <SidebarSection
+          title="Tools"
+          icon={<Wrench size={14} />}
+          isCollapsed={isCollapsed}
+        >
+          <SidebarItem
+            to="/qr-code-generator"
+            icon={<QrCode size={16} />}
+            label="QR Generator"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/barcode-generator"
+            icon={<Barcode size={16} />}
+            label="Barcode"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/business-card-maker"
+            icon={<BusinessCard size={16} />}
+            label="Business Card"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/calculators"
+            icon={<Calculator size={16} />}
+            label="Calculators"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+        </SidebarSection>
 
         {/* Finance Section */}
-        <div className="px-4 py-2">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Finance
-          </h3>
-          <div className="space-y-1">
-            <SidebarItem
-              to="/expenses"
-              icon={<CreditCard size={18} />}
-              label="Expenses"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/gst"
-              icon={<Receipt size={18} />}
-              label="GST Compliance"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/gst-calculator"
-              icon={<Calculator size={18} />}
-              label="GST Calculator"
-              onClick={onClose}
-            />
-            <SidebarItem
-              to="/reports"
-              icon={<BarChart4 size={18} />}
-              label="Reports"
-              onClick={onClose}
-            />
-          </div>
-        </div>
+        <SidebarSection
+          title="Finance"
+          icon={<DollarSign size={14} />}
+          isCollapsed={isCollapsed}
+        >
+          <SidebarItem
+            to="/expenses"
+            icon={<CreditCard size={16} />}
+            label="Expenses"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/gst"
+            icon={<Receipt size={16} />}
+            label="GST"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/gst-calculator"
+            icon={<Calculator size={16} />}
+            label="GST Calculator"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/reports"
+            icon={<BarChart4 size={16} />}
+            label="Reports"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+        </SidebarSection>
 
         {/* Market Data Section */}
-        <div className="px-4 py-2">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Market Data
-          </h3>
-          <div className="space-y-1">
-            <SidebarItem
-              to="/market-data"
-              icon={<TrendingUp size={18} />}
-              label="Stock Market"
-              onClick={onClose}
-            />
-          </div>
-        </div>
-      </nav>
-
-      <div className="mt-6 px-4">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Settings
-        </h2>
-      </div>
-
-      <nav className="mt-1 mb-6">
-        <SidebarItem
-          to="/settings/profile"
-          icon={<Users size={18} />}
-          label="Business Profile"
-          onClick={onClose}
-        />
-        <SidebarItem
-          to="/settings/general"
-          icon={<Settings size={18} />}
-          label="Preferences"
-          onClick={onClose}
-        />
+        <SidebarSection
+          title="Market Data"
+          icon={<TrendingUp size={14} />}
+          isCollapsed={isCollapsed}
+        >
+          <SidebarItem
+            to="/market-data"
+            icon={<TrendingUp size={16} />}
+            label="Stock Market"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+        </SidebarSection>
+        {/* Settings Section */}
+        <SidebarSection
+          title="Settings"
+          icon={<Settings size={14} />}
+          isCollapsed={isCollapsed}
+        >
+          <SidebarItem
+            to="/settings/profile"
+            icon={<Users size={16} />}
+            label="Business Profile"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+          <SidebarItem
+            to="/settings/general"
+            icon={<Settings size={16} />}
+            label="Preferences"
+            isCollapsed={isCollapsed}
+            onClick={onClose}
+          />
+        </SidebarSection>
       </nav>
     </aside>
   );
