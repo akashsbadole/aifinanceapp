@@ -39,6 +39,8 @@ import MutualFundCalculator from "@/components/calculators/MutualFundCalculator"
 import BrokerageCalculator from "@/components/calculators/BrokerageCalculator";
 import CalculatorLanding from "./pages/CalculatorLanding";
 import Companies from "./pages/Companies";
+import BusinessProfile from "./pages/settings/BusinessProfile";
+import GeneralSettings from "./pages/settings/GeneralSettings";
 
 const queryClient = new QueryClient();
 
@@ -229,6 +231,24 @@ const App: React.FC = () => {
               element={
                 <DashboardLayout>
                   <Companies />
+                </DashboardLayout>
+              }
+            />
+
+            {/* Settings Routes */}
+            <Route
+              path="/settings/profile"
+              element={
+                <DashboardLayout>
+                  <BusinessProfile />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/settings/general"
+              element={
+                <DashboardLayout>
+                  <GeneralSettings />
                 </DashboardLayout>
               }
             />

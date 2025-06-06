@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model BusinessProfile {
+  id             String  @id @default(cuid())
+  companyName    String
+  companyAddress String
+  phone          String?
+  email          String?
+  website        String?
+  gstin          String?
+  logo           String?
+  isDefault      Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  invoices Invoice[]
+
+  @@map("business_profiles")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  budget      Float?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  expenses Expense[]
+
+  @@map("categories")
+}
+
+model Expense {
+  id            String   @id @default(cuid())
+  amount        Float
+  description   String?
+  vendor        String?
+  date          DateTime
+  paymentMethod String?
+  status        String   @default("pending") // pending, approved, rejected
+  hasReceipt    Boolean  @default(false)
+  receiptUrl    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  clientName    String
+  clientEmail   String?
+  clientAddress String
+  dueDate       DateTime
+  subtotal      Float
+  taxRate       Float    @default(0)
+  taxAmount     Float    @default(0)
+  discount      Float    @default(0)
+  total         Float
+  status        String   @default("draft") // draft, sent, paid, overdue, cancelled
+  notes         String?
+  terms         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  businessProfileId String?
+  businessProfile   BusinessProfile? @relation(fields: [businessProfileId], references: [id])
+  items             InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String @id @default(cuid())
+  description String
+  quantity    Float
+  rate        Float
+  amount      Float
+  unit        String @default("PCS")
+
+  // Relations
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model Product {
+  id            String  @id @default(cuid())
+  name          String
+  sku           String  @unique
+  description   String?
+  categoryId    String?
+  purchasePrice Float
+  sellingPrice  Float
+  stockQuantity Int     @default(0)
+  minimumStock  Int     @default(0)
+  location      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("products")
+}
+
+model QRCode {
+  id         String   @id @default(cuid())
+  name       String
+  content    String
+  type       String   // url, text, email, phone, wifi, vcard
+  qrCodeData String   // base64 encoded QR code image
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("qr_codes")
+}
+
+model Settings {
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model StockTransaction {
+  id            String   @id @default(cuid())
+  productId     String
+  type          String   // in, out, adjustment
+  quantity      Int
+  reason        String?
+  referenceId   String?  // invoice id, purchase order id, etc.
+  referenceType String?  // invoice, purchase_order, adjustment
+  createdAt     DateTime @default(now())
+
+  @@map("stock_transactions")
+}
+
+model SalesTransaction {
+  id          String   @id @default(cuid())
+  productId   String
+  quantity    Int
+  unitPrice   Float
+  totalAmount Float
+  customerId  String?
+  invoiceId   String?
+  createdAt   DateTime @default(now())
+
+  @@map("sales_transactions")
+}
+
+model Customer {
+  id      String  @id @default(cuid())
+  name    String
+  email   String?
+  phone   String?
+  address String?
+  gstin   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model Vendor {
+  id      String  @id @default(cuid())
+  name    String
+  email   String?
+  phone   String?
+  address String?
+  gstin   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vendors")
+}

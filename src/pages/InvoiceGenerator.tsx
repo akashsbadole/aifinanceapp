@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,8 +24,12 @@ import {
   Eye,
   Calculator,
   FileText,
+  Save,
+  ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { invoiceService } from "@/services/invoiceService";
 
 interface InvoiceItem {
   id: number;
@@ -54,27 +59,73 @@ interface InvoiceData {
 }
 
 const InvoiceGenerator = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("details");
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const [invoiceData, setInvoiceData] = useState<InvoiceData>({
     companyName: "",
     companyAddress: "",
     gstin: "",
     customerName: "",
     customerAddress: "",
-    invoiceNo: "",
+    invoiceNo: invoiceService.generateInvoiceNumber(),
     date: new Date().toISOString().split("T")[0],
     dueDate: "",
     items: [
       { id: 1, description: "", quantity: 0, rate: 0, amount: 0, unit: "PCS" },
     ],
-    includeTax: false,
+    includeTax: true,
     notes: "",
     terms: "Thanks for doing business with us!",
     currency: "India (₹)",
     total: 0,
     logo: "",
   });
+
+  // Load business profile and settings on component mount
+  useEffect(() => {
+    const loadDefaults = async () => {
+      try {
+        // Load default business profile
+        const response = await fetch(
+          "http://localhost:3001/api/business-profiles/default"
+        );
+        if (response.ok) {
+          const profile = await response.json();
+          setInvoiceData((prev) => ({
+            ...prev,
+            companyName: profile.companyName || "",
+            companyAddress: profile.companyAddress || "",
+            gstin: profile.gstin || "",
+            logo: profile.logo || "",
+          }));
+        }
+
+        // Load settings
+        const settingsResponse = await fetch(
+          "http://localhost:3001/api/settings"
+        );
+        if (settingsResponse.ok) {
+          const settings = await settingsResponse.json();
+          setInvoiceData((prev) => ({
+            ...prev,
+            currency:
+              settings.currency === "INR"
+                ? "India (₹)"
+                : settings.currency || "India (₹)",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load defaults:", error);
+      }
+    };
+
+    loadDefaults();
+  }, []);
 
   const UNITS = [
     { value: "GM", label: "GRAMMES (GM)" },
@@ -146,8 +197,115 @@ const InvoiceGenerator = () => {
       (sum, item) => sum + item.amount,
       0
     );
-    const tax = invoiceData.includeTax ? subtotal * 0.18 : 0;
+    const tax = invoiceData.includeTax ? subtotal * 0.18 : 0; // Default 18% GST
     return (subtotal + tax).toFixed(2);
+  };
+
+  const saveInvoice = async () => {
+    try {
+      setIsLoading(true);
+
+      // Validate required fields
+      if (!invoiceData.invoiceNo.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Invoice number is required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!invoiceData.customerName.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Customer name is required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!invoiceData.customerAddress.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Customer address is required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!invoiceData.dueDate) {
+        toast({
+          title: "Validation Error",
+          description: "Due date is required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate items
+      const validItems = invoiceData.items.filter(
+        (item) => item.description.trim() && item.quantity > 0 && item.rate > 0
+      );
+
+      if (validItems.length === 0) {
+        toast({
+          title: "Validation Error",
+          description: "At least one valid item is required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const subtotal = validItems.reduce((sum, item) => sum + item.amount, 0);
+      const taxRate = invoiceData.includeTax ? 18 : 0; // Default 18% GST
+      const taxAmount = invoiceData.includeTax ? subtotal * 0.18 : 0;
+      const total = subtotal + taxAmount;
+
+      const invoiceToSave = {
+        invoiceNumber: invoiceData.invoiceNo.trim(),
+        clientName: invoiceData.customerName.trim(),
+        clientEmail: "", // Could be added to form later
+        clientAddress: invoiceData.customerAddress.trim(),
+        dueDate: invoiceData.dueDate, // Keep as string, API will convert
+        subtotal: Number(subtotal.toFixed(2)),
+        taxRate: Number(taxRate),
+        taxAmount: Number(taxAmount.toFixed(2)),
+        discount: 0,
+        total: Number(total.toFixed(2)),
+        status: "draft",
+        notes: invoiceData.notes || "",
+        terms: invoiceData.terms || "",
+        items: validItems.map((item) => ({
+          description: item.description.trim(),
+          quantity: Number(item.quantity),
+          rate: Number(item.rate),
+          amount: Number(item.amount.toFixed(2)),
+          unit: item.unit || "PCS",
+        })),
+      };
+
+      console.log("Saving invoice:", invoiceToSave); // Debug log
+
+      await invoiceService.createInvoice(invoiceToSave);
+
+      toast({
+        title: "Invoice Saved",
+        description: `Invoice ${invoiceData.invoiceNo} has been saved successfully.`,
+      });
+
+      // Navigate back to invoices list
+      navigate("/invoices");
+    } catch (error) {
+      console.error("Error saving invoice:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message || "Failed to save invoice. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const generatePDF = async () => {
@@ -262,16 +420,33 @@ const InvoiceGenerator = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Invoice Generator</h1>
-          <p className="text-muted-foreground">
-            Create professional invoices with ease
-          </p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/invoices")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Invoice Generator</h1>
+            <p className="text-muted-foreground">
+              Create professional invoices with ease
+            </p>
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => setActiveTab("preview")}>
             <Eye className="h-4 w-4 mr-2" />
             Preview
+          </Button>
+          <Button variant="outline" onClick={saveInvoice} disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            {isLoading ? "Saving..." : "Save Invoice"}
           </Button>
           <Button onClick={generatePDF}>
             <Download className="w-4 h-4 mr-2" />

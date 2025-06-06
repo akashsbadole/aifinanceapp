@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,13 +27,6 @@ import {
   Copy,
 } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -53,17 +47,18 @@ import {
   InvoiceStats,
 } from "@/services/invoiceService";
 import { Loader2, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { useAppStore } from "@/stores/useAppStore";
 
 const Invoices = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const { toast } = useToast();
 
   // Fetch invoices from API
   const fetchInvoices = async () => {
@@ -78,6 +73,9 @@ const Invoices = () => {
 
       setInvoices(response.invoices);
       setTotalPages(response.pagination.pages);
+      if (response.stats) {
+        setStats(response.stats);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -164,6 +162,17 @@ const Invoices = () => {
           fetchInvoices();
           fetchStats();
           break;
+        case "Edit":
+          // Navigate to invoice generator with invoice data
+          navigate(`/invoice-generator?edit=${invoice.id}`);
+          break;
+        case "View":
+          // Could open a modal or navigate to view page
+          toast({
+            title: "View Invoice",
+            description: `Viewing invoice ${invoice.invoiceNumber}`,
+          });
+          break;
         case "Download":
           // Export single invoice to CSV
           invoiceService.downloadCSV(
@@ -217,7 +226,7 @@ const Invoices = () => {
             Manage your invoices and billing
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
+        <Button onClick={() => navigate("/invoice-generator")}>
           <Plus className="h-4 w-4 mr-2" />
           Create Invoice
         </Button>
@@ -527,6 +536,31 @@ const Invoices = () => {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="flex items-center px-4 py-2 text-sm">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
